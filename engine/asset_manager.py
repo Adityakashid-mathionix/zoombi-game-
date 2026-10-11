@@ -123,6 +123,74 @@ class AssetGenerator:
         img.save(path)
 
     @staticmethod
+    def create_wall_greenhouse(path):
+        """Level 6: Contaminated hydroponics greenhouse with overgrown vines & bioglass."""
+        img = Image.new("RGBA", (TEXTURE_SIZE, TEXTURE_SIZE), (35, 48, 38, 255))
+        draw = ImageDraw.Draw(img)
+        # Structural steel struts
+        draw.rectangle([(10, 10), (246, 246)], outline=(20, 28, 22), width=4)
+        draw.line([(0, 128), (TEXTURE_SIZE, 128)], fill=(25, 35, 28), width=4)
+        draw.line([(128, 0), (128, TEXTURE_SIZE)], fill=(25, 35, 28), width=4)
+        # Translucent algae bioglass panels
+        draw.rectangle([(18, 18), (122, 122)], fill=(45, 68, 50))
+        draw.rectangle([(134, 18), (238, 122)], fill=(40, 62, 46))
+        draw.rectangle([(18, 134), (122, 238)], fill=(40, 64, 48))
+        draw.rectangle([(134, 134), (238, 238)], fill=(48, 72, 54))
+        # Creeping toxic vines
+        for vx in (30, 80, 160, 210):
+            draw.line([(vx, 256), (vx + 15, 160), (vx - 10, 80), (vx + 5, 0)], fill=(25, 140, 45), width=4)
+            # Little leaves
+            draw.ellipse([(vx - 6, 140), (vx + 8, 155)], fill=(35, 180, 60))
+            draw.ellipse([(vx + 10, 90), (vx + 24, 105)], fill=(35, 180, 60))
+        # Orange hazard alert band
+        draw.rectangle([(0, 118), (TEXTURE_SIZE, 138)], fill=(255, 130, 25))
+        img.save(path)
+
+    @staticmethod
+    def create_wall_catacombs(path):
+        """Level 7: Subterranean cold war bunker catacombs with reinforced brick & steel rebars."""
+        img = Image.new("RGBA", (TEXTURE_SIZE, TEXTURE_SIZE), (42, 38, 40, 255))
+        draw = ImageDraw.Draw(img)
+        # Dark crypt stone blocks
+        brick_h = 32
+        brick_w = 64
+        for row, y in enumerate(range(0, TEXTURE_SIZE, brick_h)):
+            shift = (row % 2) * (brick_w // 2)
+            for x in range(-shift, TEXTURE_SIZE + brick_w, brick_w):
+                draw.rectangle([(x + 2, y + 2), (x + brick_w - 2, y + brick_h - 2)], fill=(58 + (x % 12), 52, 54))
+                draw.line([(x, y), (x + brick_w, y)], fill=(20, 18, 20), width=3)
+                draw.line([(x, y), (x, y + brick_h)], fill=(20, 18, 20), width=3)
+        # Heavy rebar steel grating reinforcement
+        for rx in (48, 128, 208):
+            draw.line([(rx, 0), (rx, TEXTURE_SIZE)], fill=(85, 80, 85), width=4)
+        draw.line([(0, 64), (TEXTURE_SIZE, 64)], fill=(85, 80, 85), width=4)
+        draw.line([(0, 192), (TEXTURE_SIZE, 192)], fill=(85, 80, 85), width=4)
+        # Crimson bunker hazard skull stamp
+        draw.ellipse([(108, 108), (148, 148)], fill=(180, 25, 40))
+        draw.rectangle([(116, 136), (140, 155)], fill=(180, 25, 40))
+        img.save(path)
+
+    @staticmethod
+    def create_wall_airbase(path):
+        """Level 8: Military surface airbase concrete blast-wall with navigation guide lights."""
+        img = Image.new("RGBA", (TEXTURE_SIZE, TEXTURE_SIZE), (55, 58, 64, 255))
+        draw = ImageDraw.Draw(img)
+        # Concrete blast slabs
+        draw.rectangle([(8, 8), (248, 248)], outline=(28, 30, 34), width=4)
+        draw.line([(0, 128), (TEXTURE_SIZE, 128)], fill=(32, 34, 38), width=3)
+        # Weathering cracks
+        draw.line([(40, 20), (65, 80), (50, 120)], fill=(24, 25, 28), width=2)
+        draw.line([(180, 140), (200, 200), (220, 230)], fill=(24, 25, 28), width=2)
+        # Gold Runway warning stripes across top and bottom
+        for sx in range(0, TEXTURE_SIZE, 32):
+            draw.polygon([(sx, 0), (sx + 16, 0), (sx + 8, 30), (sx - 8, 30)], fill=(245, 215, 30))
+            draw.polygon([(sx, 226), (sx + 16, 226), (sx + 8, 256), (sx - 8, 256)], fill=(245, 215, 30))
+        # Runway guide beacon in center
+        draw.ellipse([(110, 110), (146, 146)], fill=(255, 230, 80))
+        draw.ellipse([(118, 118), (138, 138)], fill=(255, 255, 200))
+        img.save(path)
+
+    @staticmethod
     def create_wall_door(path, color_rgb=(220, 40, 50), label="LOCKED"):
         """Reinforced Security Door with colored electronic keycard reader."""
         img = Image.new("RGBA", (TEXTURE_SIZE, TEXTURE_SIZE), (50, 55, 60, 255))
@@ -275,13 +343,16 @@ class AssetGenerator:
 
     @classmethod
     def create_survivor_sprites(cls, base_dir="assets/sprites/survivors"):
-        """Generate animated sprites for the 5 survivors with unique visual uniforms."""
+        """Generate animated sprites for survivors with unique visual uniforms."""
         survivors = {
             1: {"name": "doctor", "coat": (240, 245, 248), "accent": (220, 30, 40), "head": "hair_dark"},
             2: {"name": "engineer", "coat": (245, 140, 20), "accent": (255, 220, 30), "head": "hard_hat"},
             3: {"name": "scout", "coat": (65, 80, 60), "accent": (40, 45, 35), "head": "beret"},
             4: {"name": "virologist", "coat": (235, 210, 30), "accent": (40, 180, 240), "head": "hazmat_visor"},
             5: {"name": "scientist", "coat": (225, 230, 235), "accent": (40, 50, 80), "head": "glasses"},
+            6: {"name": "botanist", "coat": (50, 110, 60), "accent": (255, 130, 25), "head": "hair_dark"},
+            7: {"name": "demolitions", "coat": (70, 65, 75), "accent": (220, 25, 45), "head": "hard_hat"},
+            8: {"name": "commander", "coat": (40, 55, 90), "accent": (245, 215, 30), "head": "beret"},
         }
         for lvl_id, data in survivors.items():
             s_dir = os.path.join(base_dir, data["name"])
@@ -451,13 +522,16 @@ class AssetGenerator:
             draw.rectangle([(40, 50), (88, 92)], fill=(35, 45, 60))
             img.save(armor_path)
 
-        # Keycards (5 colors)
+        # Keycards (8 colors)
         kc_colors = {
             "red": (230, 45, 55),
             "yellow": (245, 200, 35),
             "blue": (35, 145, 245),
             "green": (45, 220, 80),
             "purple": (190, 60, 245),
+            "orange": (255, 130, 25),
+            "crimson": (220, 25, 45),
+            "gold": (245, 215, 30),
         }
         for kc_name, kc_col in kc_colors.items():
             kc_path = os.path.join(base_dir, f"keycard_{kc_name}.png")
@@ -531,14 +605,20 @@ class AssetManager:
         AssetGenerator.create_wall_barricade(os.path.join(tex_dir, "wall_barricade.png"))
         AssetGenerator.create_wall_chemical(os.path.join(tex_dir, "wall_chemical.png"))
         AssetGenerator.create_wall_lab(os.path.join(tex_dir, "wall_lab.png"))
+        AssetGenerator.create_wall_greenhouse(os.path.join(tex_dir, "wall_greenhouse.png"))
+        AssetGenerator.create_wall_catacombs(os.path.join(tex_dir, "wall_catacombs.png"))
+        AssetGenerator.create_wall_airbase(os.path.join(tex_dir, "wall_airbase.png"))
 
-        # Build door textures
+        # Build door textures (8 levels)
         kc_colors = {
             1: (230, 45, 55),
             2: (245, 200, 35),
             3: (35, 145, 245),
             4: (45, 220, 80),
             5: (190, 60, 245),
+            6: (255, 130, 25),
+            7: (220, 25, 45),
+            8: (245, 215, 30),
         }
         for lvl_id, col in kc_colors.items():
             AssetGenerator.create_wall_door(os.path.join(tex_dir, f"door_level_{lvl_id}.png"), col)
@@ -575,17 +655,20 @@ class AssetManager:
     def load_surfaces(self):
         tex_dir = "assets/textures"
         # 1. Wall textures mapping by ID:
-        # 1: Medical, 2: Subway, 3: Barricade, 4: Chemical, 5: Lab
+        # 1: Medical, 2: Subway, 3: Barricade, 4: Chemical, 5: Lab, 6: Greenhouse, 7: Catacombs, 8: Airbase
         self.wall_textures = {
             1: self.load_texture(os.path.join(tex_dir, "wall_medical.png")),
             2: self.load_texture(os.path.join(tex_dir, "wall_subway.png")),
             3: self.load_texture(os.path.join(tex_dir, "wall_barricade.png")),
             4: self.load_texture(os.path.join(tex_dir, "wall_chemical.png")),
             5: self.load_texture(os.path.join(tex_dir, "wall_lab.png")),
+            6: self.load_texture(os.path.join(tex_dir, "wall_greenhouse.png")),
+            7: self.load_texture(os.path.join(tex_dir, "wall_catacombs.png")),
+            8: self.load_texture(os.path.join(tex_dir, "wall_airbase.png")),
         }
 
-        # Door textures: mapped by 101, 102, 103, 104, 105
-        for lvl_id in range(1, 6):
+        # Door textures: mapped by 101 through 108
+        for lvl_id in range(1, 9):
             self.door_textures[100 + lvl_id] = self.load_texture(os.path.join(tex_dir, f"door_level_{lvl_id}.png"))
 
         # Extraction tile: mapped by 99
@@ -609,6 +692,9 @@ class AssetManager:
             "keycard_blue": self.load_texture(os.path.join(p_dir, "keycard_blue.png"), (128, 128)),
             "keycard_green": self.load_texture(os.path.join(p_dir, "keycard_green.png"), (128, 128)),
             "keycard_purple": self.load_texture(os.path.join(p_dir, "keycard_purple.png"), (128, 128)),
+            "keycard_orange": self.load_texture(os.path.join(p_dir, "keycard_orange.png"), (128, 128)),
+            "keycard_crimson": self.load_texture(os.path.join(p_dir, "keycard_crimson.png"), (128, 128)),
+            "keycard_gold": self.load_texture(os.path.join(p_dir, "keycard_gold.png"), (128, 128)),
         }
 
         # Load Zombie sprite frames
@@ -627,7 +713,10 @@ class AssetManager:
 
         # Load Survivor sprites
         s_base = "assets/sprites/survivors"
-        s_map = {1: "doctor", 2: "engineer", 3: "scout", 4: "virologist", 5: "scientist"}
+        s_map = {
+            1: "doctor", 2: "engineer", 3: "scout", 4: "virologist", 5: "scientist",
+            6: "botanist", 7: "demolitions", 8: "commander"
+        }
         for lvl_id, s_name in s_map.items():
             s_dir = os.path.join(s_base, s_name)
             frames = []

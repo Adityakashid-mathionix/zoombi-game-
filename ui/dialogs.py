@@ -102,8 +102,15 @@ class DebriefingModal:
         btn_lobby = pg.Rect(bx + 380, by + box_h - 75, 260, 48)
 
         if btn_next.collidepoint(mx, my):
-            next_lvl = min(5, self.game.level_map.level_id + 1)
-            self.game.start_mission(next_lvl)
+            from engine.settings import LEVELS_DATA
+            cur_lvl = self.game.level_map.level_id
+            is_rand = getattr(self.game.level_map, "random_map", False)
+            if cur_lvl < len(LEVELS_DATA):
+                next_lvl = cur_lvl + 1
+                self.game.start_mission(next_lvl, random_map=is_rand)
+            else:
+                # Beyond max campaign level, deploy continuous random map sector
+                self.game.start_mission(cur_lvl, random_map=True)
             return True
         elif btn_lobby.collidepoint(mx, my):
             self.game.return_to_lobby()
@@ -147,7 +154,8 @@ class GameOverModal:
         btn_lobby = pg.Rect(WIDTH // 2 + 20, HEIGHT // 2 + 40, 200, 50)
 
         if btn_retry.collidepoint(mx, my):
-            self.game.start_mission(self.game.level_map.level_id)
+            is_rand = getattr(self.game.level_map, "random_map", False)
+            self.game.start_mission(self.game.level_map.level_id, random_map=is_rand)
             return True
         elif btn_lobby.collidepoint(mx, my):
             self.game.return_to_lobby()

@@ -23,6 +23,23 @@ Your mission: Infiltrate five quarantine zones, eliminate zombie swarms, locate 
 | **Level 3** | **City Center Barricade** | Blue Tactical Keycard | **Sergeant Ramos** | Military Recon Scout with horde telemetry maps |
 | **Level 4** | **Industrial Chemical Plant** | Green HAZMAT Keycard | **Dr. Elena Rostova** | Virology Specialist with live pathogen samples |
 | **Level 5** | **Sub-level Research Lab** | Purple Master Keycard | **Dr. Arthur Sterling** | Head BioCorp Scientist with the Master Antidote |
+| **Level 6** | **Bio-Dome Hydroponics** | Orange Botanical Keycard | **Dr. Maya Lin** | Botanist Specialist with cellular pathogen inhibitor |
+| **Level 7** | **Underground Catacombs** | Crimson Heavy Keycard | **Chief Alvarez** | Demolitions Expert arming the hive blast detonator |
+| **Level 8** | **Surface Airbase Evac** | Gold Master Keycard | **Major Katherine Ross** | Air Commander clearing heavy air extraction transport |
+
+---
+
+## 🎲 Procedural Random Map Generator Mode
+
+The game features an integrated **BFS-Validated Procedural Map Generator** (`engine/map_generator.py`):
+- **Dynamic Solvable Mazes**: Procedurally carves interconnected rooms and corridors, verified using graph Breadth-First Search (BFS) to guarantee a solvable path:
+  1. `Player Start -> Keycard Pickup` (accessible without crossing locked gate)
+  2. `Keycard -> Locked Security Door`
+  3. `Door -> VIP Survivor Chamber`
+  4. `Survivor -> Extraction Evacuation Bay`
+- **Dynamic Difficulty Swarms**: Adjusts zombie density and infected classes (Walkers, Runners, Spitters, Brutes) scaled by sector hazard tier.
+- **Dynamic Item Distribution**: Spawns Medkits, Ammo Crates, Kevlar Armor, Frag Grenades, and Adrenaline Stims across unexplored sectors.
+- **Mode Toggle**: In the Lobby Menu, toggle between **Classic Campaign** and **Procedural Random** via the `[TOGGLE MODE]` button or key `R`, or click `[⚡ RANDOM MAP]` to instantly deploy into a unique layout!
 
 ---
 

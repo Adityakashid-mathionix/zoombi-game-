@@ -53,6 +53,9 @@ COLOR_GREEN = (45, 215, 95)
 COLOR_CYAN = (0, 210, 255)
 COLOR_PURPLE = (180, 70, 240)
 COLOR_YELLOW = (250, 220, 30)
+COLOR_ORANGE = (255, 130, 25)
+COLOR_CRIMSON = (220, 25, 45)
+COLOR_GOLD = (245, 215, 30)
 
 # Campaign Levels Definition
 LEVELS_DATA = {
@@ -120,7 +123,46 @@ LEVELS_DATA = {
         "floor_color": (20, 24, 32),
         "ceiling_color": (12, 16, 22),
         "ambient_light": 0.80,
-    }
+    },
+    6: {
+        "title": "Level 6: Bio-Dome Hydroponics",
+        "subtitle": "Sector 7 Greenhouse Complex",
+        "survivor": "Botanist Specialist",
+        "survivor_name": "Dr. Maya Lin",
+        "survivor_bio": "Discovered botanical inhibitor halting pathogen cellular replication.",
+        "keycard_name": "Orange Botanical Keycard",
+        "keycard_color": (255, 130, 25),
+        "theme": "greenhouse",
+        "floor_color": (24, 34, 26),
+        "ceiling_color": (15, 22, 17),
+        "ambient_light": 0.85,
+    },
+    7: {
+        "title": "Level 7: Underground Catacombs & Vaults",
+        "subtitle": "Subterranean Cold War Bunker",
+        "survivor": "Demolitions Expert",
+        "survivor_name": "Chief Alvarez",
+        "survivor_bio": "Sapper holding detonator telemetry to seal the infected hive entrance.",
+        "keycard_name": "Crimson Heavy Keycard",
+        "keycard_color": (220, 25, 45),
+        "theme": "catacombs",
+        "floor_color": (22, 20, 24),
+        "ceiling_color": (14, 12, 16),
+        "ambient_light": 0.70,
+    },
+    8: {
+        "title": "Level 8: Surface Airbase Evac",
+        "subtitle": "Sector Zero Final Runway",
+        "survivor": "Air Commander",
+        "survivor_name": "Major Katherine Ross",
+        "survivor_bio": "Heavy transport flight officer awaiting coordinate lock for total rescue.",
+        "keycard_name": "Gold Master Keycard",
+        "keycard_color": (245, 215, 30),
+        "theme": "airbase",
+        "floor_color": (26, 28, 32),
+        "ceiling_color": (16, 18, 22),
+        "ambient_light": 0.85,
+    },
 }
 
 # Weapons Definitions

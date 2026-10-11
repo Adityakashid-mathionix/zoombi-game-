@@ -24,8 +24,11 @@ class LobbyMenu:
         self.font_bold = pg.font.SysFont("Arial", 16, bold=True)
         self.font_small = pg.font.SysFont("Arial", 13, bold=False)
 
-        # Selected level in selector
+        # Selected level in selector (1 to 8)
         self.selected_level_id = 1
+        self.random_map_mode = False
+        self.campaign_page = 0  # 0: Levels 1-4, 1: Levels 5-8
+
         # Selected primary weapon and tactical item
         self.selected_primary = self.game.firebase_service.cache["loadout"]["primary_weapon"]
         self.selected_tactical = self.game.firebase_service.cache["loadout"]["tactical_item"]
@@ -43,6 +46,30 @@ class LobbyMenu:
             mx = int(event.x * WIDTH)
             my = int(event.y * HEIGHT)
             self.process_click(mx, my)
+
+        # Keyboard shortcuts in lobby
+        elif event.type == pg.KEYDOWN:
+            if event.key in (pg.K_RETURN, pg.K_SPACE):
+                self.game.start_mission(
+                    self.selected_level_id, self.selected_primary, self.selected_tactical,
+                    random_map=self.random_map_mode
+                )
+            elif event.key in (pg.K_1, pg.K_2, pg.K_3, pg.K_4, pg.K_5, pg.K_6, pg.K_7, pg.K_8):
+                lvl = event.key - pg.K_0
+                if lvl in self.game.firebase_service.cache.get("unlocked_levels", [1]):
+                    self.selected_level_id = lvl
+                    self.campaign_page = 0 if lvl <= 4 else 1
+            elif event.key == pg.K_r:
+                # Toggle Random Map Generator mode
+                self.random_map_mode = not self.random_map_mode
+            elif event.key in (pg.K_p, pg.K_LEFT, pg.K_RIGHT):
+                # Switch page
+                self.campaign_page = 1 - self.campaign_page
+            elif event.key == pg.K_TAB:
+                # Cycle tabs
+                tab_order = ["campaign", "loadout", "profile", "leaderboards", "settings"]
+                cur_i = tab_order.index(self.current_tab) if self.current_tab in tab_order else 0
+                self.current_tab = tab_order[(cur_i + 1) % len(tab_order)]
 
     def process_click(self, mx, my):
         # 1. Top Navigation Tabs
@@ -68,23 +95,62 @@ class LobbyMenu:
             self.handle_leaderboard_clicks(mx, my)
 
     def handle_campaign_clicks(self, mx, my):
-        # Check level card clicks (Levels 1 to 5)
-        card_w, card_h = 210, 360
-        start_x = 70
-        y = 110
+        # 1. Page Selector Buttons at top (y = 86..118)
+        p1_rect = pg.Rect(70, 86, 170, 32)
+        p2_rect = pg.Rect(255, 86, 170, 32)
+        if p1_rect.collidepoint(mx, my):
+            self.campaign_page = 0
+            return
+        if p2_rect.collidepoint(mx, my):
+            self.campaign_page = 1
+            return
 
+        # 2. Random Map Generator Toggle Button (Top Right)
+        mode_rect = pg.Rect(WIDTH - 380, 86, 310, 32)
+        if mode_rect.collidepoint(mx, my):
+            self.random_map_mode = not self.random_map_mode
+            return
+
+        # 3. Check level card clicks (4 cards on current page)
+        card_w, card_h = 260, 370
+        start_x = 70
+        y = 130
+        page_start = self.campaign_page * 4 + 1
         unlocked_levels = self.game.firebase_service.cache.get("unlocked_levels", [1])
 
-        for lvl_id in range(1, 6):
-            x = start_x + (lvl_id - 1) * 230
+        for idx in range(4):
+            lvl_id = page_start + idx
+            x = start_x + idx * 290
             if x <= mx <= x + card_w and y <= my <= y + card_h:
                 if lvl_id in unlocked_levels:
                     self.selected_level_id = lvl_id
+                return
 
-        # Check DEPLOY MISSION Button at bottom
-        deploy_rect = pg.Rect(WIDTH // 2 - 160, HEIGHT - 120, 320, 60)
+        # 4. Action buttons at bottom
+        # Quick Random Map button (Left)
+        quick_rand_rect = pg.Rect(70, HEIGHT - 110, 260, 55)
+        if quick_rand_rect.collidepoint(mx, my):
+            self.random_map_mode = True
+            self.game.start_mission(
+                self.selected_level_id, self.selected_primary, self.selected_tactical,
+                random_map=True
+            )
+            return
+
+        # Center Main DEPLOY Button
+        deploy_rect = pg.Rect(WIDTH // 2 - 170, HEIGHT - 110, 340, 55)
         if deploy_rect.collidepoint(mx, my):
-            self.game.start_mission(self.selected_level_id, self.selected_primary, self.selected_tactical)
+            self.game.start_mission(
+                self.selected_level_id, self.selected_primary, self.selected_tactical,
+                random_map=self.random_map_mode
+            )
+            return
+
+        # Map Mode Toggle (Right)
+        toggle_btn = pg.Rect(WIDTH - 330, HEIGHT - 110, 260, 55)
+        if toggle_btn.collidepoint(mx, my):
+            self.random_map_mode = not self.random_map_mode
+            return
 
     def handle_loadout_clicks(self, mx, my):
         # Primary weapons selection
@@ -104,10 +170,10 @@ class LobbyMenu:
                 self.game.firebase_service.set_loadout(self.selected_primary, self.selected_tactical)
 
     def handle_leaderboard_clicks(self, mx, my):
-        # Level filter tabs at y=110
-        for lvl_id in range(1, 6):
-            bx = 180 + (lvl_id - 1) * 190
-            if bx - 70 <= mx <= bx + 70 and 100 <= my <= 145:
+        # Level filter tabs at y=135 for levels 1 to 8
+        for lvl_id in range(1, 9):
+            bx = 120 + (lvl_id - 1) * 135
+            if bx - 55 <= mx <= bx + 55 and 130 <= my <= 175:
                 self.leaderboard_level = lvl_id
 
     def draw(self):
@@ -167,21 +233,52 @@ class LobbyMenu:
         self.screen.blit(st_surf, (WIDTH - 150, 30))
 
     def draw_campaign_tab(self):
-        card_w, card_h = 210, 360
-        start_x = 70
-        y = 110
+        # 1. Top Controls Bar: Page Selectors & Random Map Mode Toggle
+        # Page 1 button
+        p1_active = (self.campaign_page == 0)
+        p1_rect = pg.Rect(70, 86, 170, 32)
+        pg.draw.rect(self.screen, (0, 210, 255, 60) if p1_active else (25, 28, 35), p1_rect, border_radius=6)
+        pg.draw.rect(self.screen, COLOR_CYAN if p1_active else (55, 60, 70), p1_rect, width=2 if p1_active else 1, border_radius=6)
+        p1_txt = self.font_bold.render("SECTORS 1 - 4", True, COLOR_CYAN if p1_active else (150, 160, 170))
+        self.screen.blit(p1_txt, p1_txt.get_rect(center=p1_rect.center))
 
+        # Page 2 button
+        p2_active = (self.campaign_page == 1)
+        p2_rect = pg.Rect(255, 86, 170, 32)
+        pg.draw.rect(self.screen, (0, 210, 255, 60) if p2_active else (25, 28, 35), p2_rect, border_radius=6)
+        pg.draw.rect(self.screen, COLOR_CYAN if p2_active else (55, 60, 70), p2_rect, width=2 if p2_active else 1, border_radius=6)
+        p2_txt = self.font_bold.render("SECTORS 5 - 8", True, COLOR_CYAN if p2_active else (150, 160, 170))
+        self.screen.blit(p2_txt, p2_txt.get_rect(center=p2_rect.center))
+
+        # Random Map Generator Mode Toggle Button (Top Right)
+        mode_rect = pg.Rect(WIDTH - 390, 86, 320, 32)
+        mode_bg = (40, 25, 55) if self.random_map_mode else (20, 35, 45)
+        mode_border = COLOR_PURPLE if self.random_map_mode else COLOR_CYAN
+        pg.draw.rect(self.screen, mode_bg, mode_rect, border_radius=6)
+        pg.draw.rect(self.screen, mode_border, mode_rect, width=2, border_radius=6)
+
+        mode_label = "🎲 MAP: PROCEDURAL RANDOM [ON]" if self.random_map_mode else "📜 MAP: CLASSIC CAMPAIGN [ON]"
+        mode_col = COLOR_PURPLE if self.random_map_mode else COLOR_CYAN
+        mode_surf = self.font_bold.render(mode_label, True, mode_col)
+        self.screen.blit(mode_surf, mode_surf.get_rect(center=mode_rect.center))
+
+        # 2. Level Cards (4 cards across screen on current page)
+        card_w, card_h = 260, 370
+        start_x = 70
+        y = 130
+        page_start = self.campaign_page * 4 + 1
         unlocked_levels = self.game.firebase_service.cache.get("unlocked_levels", [1])
 
-        for lvl_id in range(1, 6):
-            x = start_x + (lvl_id - 1) * 230
+        for idx in range(4):
+            lvl_id = page_start + idx
+            x = start_x + idx * 290
             is_unlocked = (lvl_id in unlocked_levels)
             is_selected = (self.selected_level_id == lvl_id)
             meta = LEVELS_DATA[lvl_id]
 
             # Card background
             card_surf = pg.Surface((card_w, card_h), pg.SRCALPHA)
-            bg_col = (25, 30, 40, 230) if is_unlocked else (15, 16, 20, 210)
+            bg_col = (25, 30, 42, 230) if is_unlocked else (15, 16, 20, 210)
             card_surf.fill(bg_col)
 
             border_col = COLOR_CYAN if is_selected else (0, 180, 220) if is_unlocked else (50, 55, 65)
@@ -189,22 +286,28 @@ class LobbyMenu:
             pg.draw.rect(card_surf, border_col, (0, 0, card_w, card_h), width=border_w, border_radius=8)
             self.screen.blit(card_surf, (x, y))
 
-            # Level Number & Status
+            # Status Tag
             status_text = "CLEARED" if (lvl_id + 1 in unlocked_levels) else "UNLOCKED" if is_unlocked else "LOCKED"
             status_col = COLOR_GREEN if status_text == "CLEARED" else COLOR_AMBER if is_unlocked else (120, 125, 135)
             st_surf = self.font_small.render(status_text, True, status_col)
             self.screen.blit(st_surf, (x + 14, y + 14))
 
+            # Random mode tag on card
+            if self.random_map_mode and is_unlocked:
+                r_tag = self.font_small.render("[PROCEDURAL]", True, COLOR_PURPLE)
+                self.screen.blit(r_tag, (x + card_w - 95, y + 14))
+
             # Level Header
             title_surf = self.font_bold.render(f"LEVEL {lvl_id}", True, COLOR_WHITE)
             self.screen.blit(title_surf, (x + 14, y + 36))
 
-            name_surf = self.font_small.render(meta["title"].split(": ")[1], True, (200, 210, 225))
+            lvl_name = meta["title"].split(": ")[1] if ": " in meta["title"] else meta["title"]
+            name_surf = self.font_small.render(lvl_name[:26], True, (200, 210, 225))
             self.screen.blit(name_surf, (x + 14, y + 60))
 
             # Survivor Card Box
-            pg.draw.rect(self.screen, (15, 18, 24), (x + 12, y + 95, card_w - 24, 130), border_radius=6)
-            pg.draw.rect(self.screen, (40, 48, 60), (x + 12, y + 95, card_w - 24, 130), width=1, border_radius=6)
+            pg.draw.rect(self.screen, (15, 18, 24), (x + 12, y + 95, card_w - 24, 135), border_radius=6)
+            pg.draw.rect(self.screen, (40, 48, 60), (x + 12, y + 95, card_w - 24, 135), width=1, border_radius=6)
 
             # Survivor avatar
             s_frames = self.game.asset_manager.survivor_sprites.get(lvl_id, [])
@@ -212,7 +315,6 @@ class LobbyMenu:
                 thumb = pg.transform.scale(s_frames[0], (70, 70))
                 self.screen.blit(thumb, (x + (card_w - 70) // 2, y + 105))
             else:
-                # Lock icon / silhouette
                 lock_text = self.font_bold.render("[LOCKED]" if not is_unlocked else "[VIP]", True, (130, 140, 150))
                 self.screen.blit(lock_text, lock_text.get_rect(center=(x + card_w // 2, y + 140)))
 
@@ -223,23 +325,41 @@ class LobbyMenu:
             self.screen.blit(doc_name, doc_name.get_rect(center=(x + card_w // 2, y + 205)))
 
             # Keycard details
-            kc_surf = self.font_small.render(f"Key: {meta['keycard_name']}", True, meta['keycard_color'] if is_unlocked else (80, 80, 80))
-            self.screen.blit(kc_surf, (x + 14, y + 245))
+            kc_col = meta.get('keycard_color', COLOR_AMBER)
+            kc_surf = self.font_small.render(f"Key: {meta['keycard_name']}", True, kc_col if is_unlocked else (80, 80, 80))
+            self.screen.blit(kc_surf, (x + 14, y + 248))
 
             # Bio text snippet
-            bio_lines = [meta['survivor_bio'][:26], meta['survivor_bio'][26:52]]
-            for bi, bline in enumerate(bio_lines):
-                b_surf = self.font_small.render(bline, True, (140, 145, 155))
-                self.screen.blit(b_surf, (x + 14, y + 275 + bi * 16))
+            bio = meta['survivor_bio']
+            b_surf1 = self.font_small.render(bio[:32], True, (140, 145, 155))
+            b_surf2 = self.font_small.render(bio[32:64], True, (140, 145, 155))
+            self.screen.blit(b_surf1, (x + 14, y + 278))
+            self.screen.blit(b_surf2, (x + 14, y + 296))
 
-        # Big "DEPLOY MISSION" button
-        meta_sel = LEVELS_DATA[self.selected_level_id]
-        deploy_rect = pg.Rect(WIDTH // 2 - 160, HEIGHT - 110, 320, 55)
-        pg.draw.rect(self.screen, (220, 40, 50), deploy_rect, border_radius=10)
+        # 3. Bottom Action Buttons
+        # Left: Quick Random Map Button
+        quick_btn = pg.Rect(70, HEIGHT - 110, 260, 55)
+        pg.draw.rect(self.screen, (60, 30, 90), quick_btn, border_radius=10)
+        pg.draw.rect(self.screen, COLOR_PURPLE, quick_btn, width=2, border_radius=10)
+        q_text = self.font_title.render("⚡ RANDOM MAP", True, COLOR_WHITE)
+        self.screen.blit(q_text, q_text.get_rect(center=quick_btn.center))
+
+        # Center: Main DEPLOY MISSION button
+        deploy_rect = pg.Rect(WIDTH // 2 - 170, HEIGHT - 110, 340, 55)
+        dep_bg = (180, 30, 80) if self.random_map_mode else (220, 40, 50)
+        pg.draw.rect(self.screen, dep_bg, deploy_rect, border_radius=10)
         pg.draw.rect(self.screen, (255, 90, 100), deploy_rect, width=2, border_radius=10)
 
-        dep_text = self.font_title.render(f"DEPLOY LEVEL {self.selected_level_id}", True, COLOR_WHITE)
+        mode_str = "PROCEDURAL" if self.random_map_mode else "CAMPAIGN"
+        dep_text = self.font_title.render(f"DEPLOY LVL {self.selected_level_id} ({mode_str})", True, COLOR_WHITE)
         self.screen.blit(dep_text, dep_text.get_rect(center=deploy_rect.center))
+
+        # Right: Toggle Map Mode Button
+        toggle_btn = pg.Rect(WIDTH - 330, HEIGHT - 110, 260, 55)
+        pg.draw.rect(self.screen, (25, 35, 45), toggle_btn, border_radius=10)
+        pg.draw.rect(self.screen, COLOR_CYAN, toggle_btn, width=2, border_radius=10)
+        t_text = self.font_title.render("TOGGLE MODE [R]", True, COLOR_CYAN)
+        self.screen.blit(t_text, t_text.get_rect(center=toggle_btn.center))
 
     def draw_loadout_tab(self):
         header = self.font_title.render("SELECT OPERATIVE COMBAT LOADOUT", True, COLOR_CYAN)
@@ -335,9 +455,9 @@ class LobbyMenu:
         currency = c.get("currency", 500)
 
         items = [
-            ("Quarantine Sector Clearance", f"{len(c.get('unlocked_levels', [1]))} / 5 Levels"),
+            ("Quarantine Sector Clearance", f"{len(c.get('unlocked_levels', [1]))} / 8 Levels"),
             ("Total Infected Eliminated", f"{kills} Zombies"),
-            ("VIP Survivors Extracted", f"{rescues} / 5 Rescued"),
+            ("VIP Survivors Extracted", f"{rescues} / 8 Rescued"),
             ("Successful Extraction Missions", f"{missions} Missions"),
             ("Hazard Pay Credits", f"{currency} Credits"),
             ("Authentication Status", "Firebase Anonymous Token" if c.get("is_anonymous") else "Firebase Cloud Verified"),
@@ -356,7 +476,7 @@ class LobbyMenu:
         pg.draw.rect(self.screen, (50, 60, 75), b_box, width=2, border_radius=10)
 
         b_title = self.font_title.render("CAMPAIGN EXTRACTION HONORS", True, COLOR_AMBER)
-        self.screen.blit(b_title, (620, 175))
+        self.screen.blit(b_title, (620, 160))
 
         badges = [
             (1, "CADUCEUS BADGE", "Dr. Sarah Chen (Field Doctor)", "Extracted medical triage personnel."),
@@ -364,37 +484,37 @@ class LobbyMenu:
             (3, "PATHFINDER STAR", "Sergeant Ramos (Military Scout)", "Recovered city center barricade radar."),
             (4, "ANTIDOTE HARVESTER", "Dr. Elena Rostova (Virologist)", "Protected mutated pathogen samples."),
             (5, "APOCALYPSE SAVIOR", "Dr. Arthur Sterling (Head Scientist)", "Extracted master vaccine dispersal data."),
+            (6, "FLORA SHIELD", "Dr. Maya Lin (Botanist Specialist)", "Secured botanical cellular inhibitor."),
+            (7, "DEMOLITION CLEAVER", "Chief Alvarez (Demolitions Expert)", "Armed detonator to seal hive caverns."),
+            (8, "TOTAL AIRLIFT MEDAL", "Major Katherine Ross (Air Commander)", "Cleared runway for extraction transports."),
         ]
 
         unlocked_levels = c.get("unlocked_levels", [1])
         for i, (lvl_id, b_name, b_vip, b_desc) in enumerate(badges):
             is_awarded = (lvl_id + 1 in unlocked_levels)
-            by = 220 + i * 78
+            by = 195 + i * 52
 
             bg_col = (30, 42, 35) if is_awarded else (18, 20, 24)
             b_border = COLOR_GREEN if is_awarded else (45, 50, 60)
-            pg.draw.rect(self.screen, bg_col, (620, by, 540, 68), border_radius=6)
-            pg.draw.rect(self.screen, b_border, (620, by, 540, 68), width=2 if is_awarded else 1, border_radius=6)
+            pg.draw.rect(self.screen, bg_col, (615, by, 550, 48), border_radius=6)
+            pg.draw.rect(self.screen, b_border, (615, by, 550, 48), width=2 if is_awarded else 1, border_radius=6)
 
             badge_col = (255, 215, 30) if is_awarded else (100, 105, 115)
             badge_surf = self.font_bold.render(f"★ {b_name}" if is_awarded else f"🔒 {b_name}", True, badge_col)
-            self.screen.blit(badge_surf, (640, by + 12))
+            self.screen.blit(badge_surf, (628, by + 6))
 
-            vip_surf = self.font_small.render(b_vip, True, COLOR_WHITE if is_awarded else (120, 125, 130))
-            self.screen.blit(vip_surf, (640, by + 34))
-
-            desc_surf = self.font_small.render(b_desc, True, (150, 160, 170) if is_awarded else (80, 85, 90))
-            self.screen.blit(desc_surf, (640, by + 48))
+            vip_surf = self.font_small.render(f"{b_vip} - {b_desc}", True, COLOR_WHITE if is_awarded else (110, 115, 120))
+            self.screen.blit(vip_surf, (628, by + 26))
 
     def draw_leaderboard_tab(self):
         header = self.font_title.render("GLOBAL QUARANTINE EXTRACTION LEADERBOARD", True, COLOR_CYAN)
-        self.screen.blit(header, (80, 100))
+        self.screen.blit(header, (80, 95))
 
-        # Filter Level Buttons (1 to 5)
-        for lvl_id in range(1, 6):
-            bx = 180 + (lvl_id - 1) * 190
+        # Filter Level Buttons (1 to 8)
+        for lvl_id in range(1, 9):
+            bx = 120 + (lvl_id - 1) * 135
             is_active = (self.leaderboard_level == lvl_id)
-            r = pg.Rect(bx - 70, 135, 140, 36)
+            r = pg.Rect(bx - 55, 130, 120, 34)
             pg.draw.rect(self.screen, (0, 210, 255, 50) if is_active else (25, 28, 35), r, border_radius=6)
             pg.draw.rect(self.screen, COLOR_CYAN if is_active else (55, 60, 70), r, width=2 if is_active else 1, border_radius=6)
 

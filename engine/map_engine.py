@@ -1,14 +1,17 @@
 """
 Campaign Level Maps & Dynamic World Engine.
-Features 5 distinct campaign levels, raycasted maze geometry, locked security doors,
-item pickups, zombie spawn points, and extraction gates.
+Features 8 distinct campaign levels, procedural random map generator mode,
+raycasted maze geometry, locked security doors, item pickups, zombie spawns, and extraction gates.
 """
 from engine.settings import LEVELS_DATA
+from engine.map_generator import RandomMapGenerator
 
 
 class LevelMap:
-    def __init__(self, level_id):
+    def __init__(self, level_id, random_map=False, seed=None):
         self.level_id = level_id
+        self.random_map = random_map
+        self.seed = seed
         self.meta = LEVELS_DATA.get(level_id, LEVELS_DATA[1])
         self.wall_type = level_id
         self.door_type = 100 + level_id
@@ -27,6 +30,21 @@ class LevelMap:
         self.build_level_geometry()
 
     def build_level_geometry(self):
+        if self.random_map:
+            # Procedural / Random Map Generation
+            layout = RandomMapGenerator.generate(self.level_id, self.meta, seed=self.seed)
+            self.grid = layout["grid"]
+            self.player_start = layout["player_start"]
+            self.survivor_pos = layout["survivor_pos"]
+            self.extraction_pos = layout["extraction_pos"]
+            self.door_positions = layout["door_positions"]
+            self.pickups = layout["pickups"]
+            self.zombie_spawns = layout["zombie_spawns"]
+            self.rows = len(self.grid)
+            self.cols = len(self.grid[0])
+            self.parse_world_map()
+            return
+
         w = self.wall_type
         d = self.door_type
         e = self.ext_type
@@ -272,6 +290,166 @@ class LevelMap:
                 {"type": "runner", "pos": (2.5, 11.5)},
                 {"type": "spitter", "pos": (13.5, 11.5)},
             ]
+
+        elif self.level_id == 6:
+            # Level 6: Bio-Dome Hydroponics (Rescue: Botanist Specialist)
+            # Layout: Tropical Growth Atrium -> Cultivation Nursery -> Spore Containment (Orange Keycard) -> Evac Bay
+            self.grid = [
+                [w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w],
+                [w, _, _, _, _, _, _, _, _, _, _, _, _, _, _, w],
+                [w, _, w, w, w, _, w, w, w, w, _, w, w, w, _, w],
+                [w, _, w, _, _, _, _, _, _, _, _, _, _, w, _, w],
+                [w, _, w, _, w, w, w, _, w, w, w, w, _, w, _, w],
+                [w, _, _, _, w, _, _, _, _, _, _, w, _, _, _, w],
+                [w, w, _, w, w, _, w, w, w, _, _, w, _, w, w, w],
+                [w, _, _, _, _, _, w, _, _, _, _, w, _, _, _, w],
+                [w, _, w, w, w, _, w, _, w, w, _, w, w, w, _, w],
+                [w, _, _, _, w, _, _, _, _, w, _, _, _, _, _, w],
+                [w, w, w, _, w, w, _, d, _, w, w, w, _, w, w, w],
+                [w, _, _, _, _, _, _, _, _, _, _, _, _, _, _, w],
+                [w, _, w, w, w, w, _, w, _, w, w, w, w, w, _, w],
+                [w, _, w, _, _, _, _, w, _, _, _, _, _, w, _, w],
+                [w, _, _, _, w, _, _, w, _, _, w, _, _, e, _, w],
+                [w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w],
+            ]
+            self.player_start = (2.5, 2.5)
+            self.survivor_pos = (7.5, 12.5)
+            self.extraction_pos = (13.5, 14.5)
+            self.door_positions[(7, 10)] = {"locked": True, "required_keycard": "orange", "open": False}
+
+            self.pickups = [
+                {"type": "keycard_orange", "pos": (14.5, 1.5), "collected": False},
+                {"type": "medkit", "pos": (1.5, 7.5), "collected": False},
+                {"type": "medkit", "pos": (9.5, 13.5), "collected": False},
+                {"type": "ammo", "pos": (8.5, 3.5), "collected": False},
+                {"type": "ammo", "pos": (14.5, 7.5), "collected": False},
+                {"type": "armor", "pos": (1.5, 13.5), "collected": False},
+                {"type": "grenade", "pos": (11.5, 9.5), "collected": False},
+                {"type": "stim", "pos": (3.5, 5.5), "collected": False},
+            ]
+            self.zombie_spawns = [
+                {"type": "spitter", "pos": (6.5, 1.5)},
+                {"type": "runner", "pos": (11.5, 3.5)},
+                {"type": "spitter", "pos": (3.5, 5.5)},
+                {"type": "brute", "pos": (9.5, 5.5)},
+                {"type": "runner", "pos": (13.5, 7.5)},
+                {"type": "walker", "pos": (1.5, 9.5)},
+                {"type": "brute", "pos": (7.5, 8.5)},
+                {"type": "spitter", "pos": (12.5, 11.5)},
+                {"type": "runner", "pos": (3.5, 13.5)},
+            ]
+
+        elif self.level_id == 7:
+            # Level 7: Underground Catacombs & Vaults (Rescue: Demolitions Expert)
+            # Layout: Ancient Crypt Entrances -> Cold War Silo -> Blast Vault (Crimson Keycard) -> Ascent Lift
+            self.grid = [
+                [w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w],
+                [w, _, _, _, _, _, w, _, _, _, _, _, _, _, _, w],
+                [w, _, w, w, _, _, w, _, w, w, w, w, w, w, _, w],
+                [w, _, w, _, _, _, _, _, _, _, _, _, _, w, _, w],
+                [w, _, w, _, w, w, w, w, w, w, _, w, _, w, _, w],
+                [w, _, _, _, w, _, _, _, _, w, _, w, _, _, _, w],
+                [w, w, w, _, w, _, w, w, _, w, _, w, w, w, _, w],
+                [w, _, _, _, _, _, _, w, _, _, _, _, _, w, _, w],
+                [w, _, w, w, w, w, _, w, w, w, w, _, _, w, _, w],
+                [w, _, _, _, _, w, _, _, _, _, w, _, _, _, _, w],
+                [w, w, w, w, _, w, w, d, w, _, w, w, w, w, _, w],
+                [w, _, _, _, _, _, _, _, w, _, _, _, _, _, _, w],
+                [w, _, w, w, w, w, _, _, w, w, w, w, _, w, _, w],
+                [w, _, w, _, _, _, _, _, _, _, _, w, _, w, _, w],
+                [w, _, _, _, w, _, _, _, _, w, _, _, _, e, _, w],
+                [w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w],
+            ]
+            self.player_start = (2.5, 2.5)
+            self.survivor_pos = (7.5, 12.5)
+            self.extraction_pos = (13.5, 14.5)
+            self.door_positions[(7, 10)] = {"locked": True, "required_keycard": "crimson", "open": False}
+
+            self.pickups = [
+                {"type": "keycard_crimson", "pos": (14.5, 1.5), "collected": False},
+                {"type": "medkit", "pos": (1.5, 7.5), "collected": False},
+                {"type": "medkit", "pos": (10.5, 13.5), "collected": False},
+                {"type": "ammo", "pos": (7.5, 3.5), "collected": False},
+                {"type": "ammo", "pos": (14.5, 7.5), "collected": False},
+                {"type": "armor", "pos": (1.5, 13.5), "collected": False},
+                {"type": "grenade", "pos": (12.5, 9.5), "collected": False},
+                {"type": "stim", "pos": (3.5, 13.5), "collected": False},
+            ]
+            self.zombie_spawns = [
+                {"type": "runner", "pos": (5.5, 1.5)},
+                {"type": "brute", "pos": (11.5, 3.5)},
+                {"type": "spitter", "pos": (3.5, 5.5)},
+                {"type": "runner", "pos": (13.5, 5.5)},
+                {"type": "brute", "pos": (7.5, 7.5)},
+                {"type": "walker", "pos": (1.5, 9.5)},
+                {"type": "runner", "pos": (12.5, 9.5)},
+                {"type": "spitter", "pos": (3.5, 13.5)},
+                {"type": "brute", "pos": (9.5, 13.5)},
+            ]
+
+        elif self.level_id == 8:
+            # Level 8: Surface Airbase Evac (Rescue: Air Commander)
+            # Layout: Tarmac Runways -> Hangar 18 -> Flight Control Bunker (Gold Keycard) -> Heavy Transport
+            self.grid = [
+                [w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w],
+                [w, _, _, _, _, _, _, _, _, _, _, _, _, _, _, w],
+                [w, _, w, w, w, w, _, w, _, w, w, w, w, w, _, w],
+                [w, _, w, _, _, _, _, w, _, _, _, _, _, w, _, w],
+                [w, _, w, _, w, w, w, w, w, w, w, _, _, w, _, w],
+                [w, _, _, _, w, _, _, _, _, _, w, _, _, _, _, w],
+                [w, w, w, _, w, _, w, w, w, _, w, w, _, w, w, w],
+                [w, _, _, _, _, _, w, _, w, _, _, _, _, _, _, w],
+                [w, _, w, w, w, _, w, _, w, _, w, w, w, w, _, w],
+                [w, _, w, _, _, _, _, _, _, _, _, _, _, w, _, w],
+                [w, _, w, _, w, w, w, d, w, w, w, w, _, w, _, w],
+                [w, _, _, _, w, _, _, _, _, _, _, w, _, _, _, w],
+                [w, w, w, _, w, _, w, _, w, w, _, w, _, w, w, w],
+                [w, _, _, _, _, _, w, _, _, _, _, _, _, _, _, w],
+                [w, _, w, w, w, w, w, _, w, w, w, w, w, e, _, w],
+                [w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w],
+            ]
+            self.player_start = (2.5, 2.5)
+            self.survivor_pos = (8.5, 12.5)
+            self.extraction_pos = (13.5, 14.5)
+            self.door_positions[(7, 10)] = {"locked": True, "required_keycard": "gold", "open": False}
+
+            self.pickups = [
+                {"type": "keycard_gold", "pos": (14.5, 1.5), "collected": False},
+                {"type": "medkit", "pos": (1.5, 5.5), "collected": False},
+                {"type": "medkit", "pos": (7.5, 13.5), "collected": False},
+                {"type": "ammo", "pos": (9.5, 3.5), "collected": False},
+                {"type": "ammo", "pos": (14.5, 9.5), "collected": False},
+                {"type": "armor", "pos": (1.5, 11.5), "collected": False},
+                {"type": "grenade", "pos": (7.5, 7.5), "collected": False},
+                {"type": "stim", "pos": (12.5, 13.5), "collected": False},
+            ]
+            self.zombie_spawns = [
+                {"type": "brute", "pos": (5.5, 1.5)},
+                {"type": "runner", "pos": (11.5, 3.5)},
+                {"type": "spitter", "pos": (3.5, 5.5)},
+                {"type": "brute", "pos": (9.5, 5.5)},
+                {"type": "runner", "pos": (13.5, 7.5)},
+                {"type": "spitter", "pos": (7.5, 7.5)},
+                {"type": "brute", "pos": (8.5, 9.5)},
+                {"type": "runner", "pos": (13.5, 11.5)},
+                {"type": "spitter", "pos": (3.5, 13.5)},
+                {"type": "brute", "pos": (11.5, 13.5)},
+            ]
+
+        else:
+            # Fallback for dynamic/endless procedural levels beyond 8
+            layout = RandomMapGenerator.generate(self.level_id, self.meta, seed=self.seed)
+            self.grid = layout["grid"]
+            self.player_start = layout["player_start"]
+            self.survivor_pos = layout["survivor_pos"]
+            self.extraction_pos = layout["extraction_pos"]
+            self.door_positions = layout["door_positions"]
+            self.pickups = layout["pickups"]
+            self.zombie_spawns = layout["zombie_spawns"]
+            self.rows = len(self.grid)
+            self.cols = len(self.grid[0])
+            self.parse_world_map()
+            return
 
         self.rows = len(self.grid)
         self.cols = len(self.grid[0])

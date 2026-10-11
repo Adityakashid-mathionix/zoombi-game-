@@ -52,6 +52,15 @@ class SupabaseService:
             "5": [
                 {"username": "ApexSurvivor", "clear_time_seconds": 105.8, "zombies_killed": 19},
             ],
+            "6": [
+                {"username": "BioBotanist", "clear_time_seconds": 88.3, "zombies_killed": 15},
+            ],
+            "7": [
+                {"username": "CryptRunner", "clear_time_seconds": 96.0, "zombies_killed": 18},
+            ],
+            "8": [
+                {"username": "AirbaseGhost", "clear_time_seconds": 112.4, "zombies_killed": 22},
+            ],
         }
         self.cache = {
             "leaderboards": default_leaderboard,

@@ -175,9 +175,9 @@ class InGameHUD:
         # Draw walls
         for y, row in enumerate(grid):
             for x, cell in enumerate(row):
-                if cell in (1, 2, 3, 4, 5):
+                if 1 <= cell <= 90:
                     pg.draw.rect(radar_surf, (70, 75, 85), (x * cell_w, y * cell_h, cell_w, cell_h))
-                elif cell >= 101 and cell <= 105:
+                elif 101 <= cell <= 199:
                     # Door
                     door_open = self.game.level_map.door_positions.get((x, y), {}).get("open", False)
                     door_col = (40, 200, 80) if door_open else (230, 45, 45)

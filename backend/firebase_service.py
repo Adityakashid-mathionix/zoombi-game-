@@ -196,8 +196,10 @@ class FirebaseService:
             return False
 
     def unlock_next_level(self, completed_level_id):
+        from engine.settings import LEVELS_DATA
         next_lvl = completed_level_id + 1
-        if next_lvl <= 5 and next_lvl not in self.cache["unlocked_levels"]:
+        max_level = len(LEVELS_DATA)
+        if next_lvl <= max_level and next_lvl not in self.cache["unlocked_levels"]:
             self.cache["unlocked_levels"].append(next_lvl)
             self.cache["unlocked_levels"].sort()
         # Reward currency

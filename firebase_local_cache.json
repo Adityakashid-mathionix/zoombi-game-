@@ -5,17 +5,23 @@
   "is_anonymous": true,
   "unlocked_levels": [
     1,
-    2
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8
   ],
-  "currency": 750,
+  "currency": 5000,
   "loadout": {
     "primary_weapon": "shotgun",
     "tactical_item": "medkit"
   },
   "stats": {
     "total_kills": 0,
-    "survivors_rescued": 1,
-    "missions_completed": 1,
+    "survivors_rescued": 18,
+    "missions_completed": 18,
     "best_times": {}
   }
 }

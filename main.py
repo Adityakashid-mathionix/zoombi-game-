@@ -59,9 +59,9 @@ class Game:
         self.hud = None
         self.touch_controls = None
 
-    def start_mission(self, level_id=1, primary_weapon=None, tactical_item=None):
+    def start_mission(self, level_id=1, primary_weapon=None, tactical_item=None, random_map=False):
         """Initializes raycaster world and deploys mission."""
-        self.level_map = LevelMap(level_id)
+        self.level_map = LevelMap(level_id, random_map=random_map)
         self.player = Player(self)
         self.weapon_manager = WeaponManager(self)
         self.pathfinding = PathFinding(self)
@@ -237,4 +237,16 @@ class Game:
 
 if __name__ == "__main__":
     game = Game()
+    if len(sys.argv) > 1:
+        arg = sys.argv[1].lower()
+        if arg in ("--play", "-p", "play", "1", "level1", "--level1"):
+            game.start_mission(1)
+        elif arg in ("2", "level2"):
+            game.start_mission(2)
+        elif arg in ("3", "level3"):
+            game.start_mission(3)
+        elif arg in ("4", "level4"):
+            game.start_mission(4)
+        elif arg in ("5", "level5"):
+            game.start_mission(5)
     game.run()
