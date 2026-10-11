@@ -1,0 +1,6 @@
+{
+  "supabase_url": "https://your-project.supabase.co",
+  "supabase_key": "your-anon-key-here",
+  "firebase_api_key": "your-firebase-web-api-key-here",
+  "firebase_db_url": "https://your-firebase-project-default-rtdb.firebaseio.com"
+}

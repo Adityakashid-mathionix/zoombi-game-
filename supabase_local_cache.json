@@ -1,0 +1,88 @@
+{
+  "leaderboards": {
+    "1": [
+      {
+        "user_id": "anon_c5bdfa01",
+        "username": "Operative_Vance",
+        "level_id": 1,
+        "clear_time_seconds": 0.0,
+        "zombies_killed": 1,
+        "timestamp": 1791728028
+      },
+      {
+        "username": "GhostOperative",
+        "clear_time_seconds": 42.5,
+        "zombies_killed": 9
+      },
+      {
+        "username": "Vance_Actual",
+        "clear_time_seconds": 48.2,
+        "zombies_killed": 8
+      },
+      {
+        "username": "ZombieHunter99",
+        "clear_time_seconds": 55.0,
+        "zombies_killed": 7
+      }
+    ],
+    "2": [
+      {
+        "username": "SubwaySurfer",
+        "clear_time_seconds": 61.3,
+        "zombies_killed": 11
+      },
+      {
+        "username": "ShadowSniper",
+        "clear_time_seconds": 72.0,
+        "zombies_killed": 9
+      }
+    ],
+    "3": [
+      {
+        "username": "DeltaLeader",
+        "clear_time_seconds": 78.4,
+        "zombies_killed": 14
+      }
+    ],
+    "4": [
+      {
+        "username": "HazmatPro",
+        "clear_time_seconds": 92.1,
+        "zombies_killed": 16
+      }
+    ],
+    "5": [
+      {
+        "username": "ApexSurvivor",
+        "clear_time_seconds": 105.8,
+        "zombies_killed": 19
+      }
+    ]
+  },
+  "profiles": {},
+  "badges": {
+    "anon_c5bdfa01": [
+      {
+        "user_id": "anon_c5bdfa01",
+        "level_id": 1,
+        "badge_id": "CADUCEUS_BADGE",
+        "title": "Field Doctor Rescued",
+        "description": "Extracted Dr. Sarah Chen from Outpost Medical Bay.",
+        "unlocked_at": 1791728028
+      }
+    ]
+  },
+  "pending_sync": [
+    {
+      "endpoint": "level_leaderboards",
+      "payload": {
+        "user_id": "anon_c5bdfa01",
+        "username": "Operative_Vance",
+        "level_id": 1,
+        "clear_time_seconds": 0.0,
+        "zombies_killed": 1,
+        "timestamp": 1791728028
+      }
+    }
+  ]
+}

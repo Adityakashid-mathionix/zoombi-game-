@@ -1,0 +1,21 @@
+{
+  "user_id": "anon_c5bdfa01",
+  "username": "Operative_Vance",
+  "email": "",
+  "is_anonymous": true,
+  "unlocked_levels": [
+    1,
+    2
+  ],
+  "currency": 750,
+  "loadout": {
+    "primary_weapon": "shotgun",
+    "tactical_item": "medkit"
+  },
+  "stats": {
+    "total_kills": 0,
+    "survivors_rescued": 1,
+    "missions_completed": 1,
+    "best_times": {}
+  }
+}
