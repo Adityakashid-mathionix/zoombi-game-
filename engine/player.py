@@ -162,14 +162,19 @@ class Player:
             dx += kb_dx
             dy += kb_dy
 
-        # Check collision with walls (sliding physics)
+        # Check collision with walls (sliding physics with corner buffer protection)
         buffer = 0.28
-        check_x = self.x + (buffer if dx > 0 else -buffer)
-        check_y = self.y + (buffer if dy > 0 else -buffer)
+        check_x = self.x + (buffer if dx > 0 else -buffer) + dx
+        check_y = self.y + (buffer if dy > 0 else -buffer) + dy
 
-        if not self.game.level_map.is_wall(check_x + dx, self.y):
+        # Verify X movement without corner clipping
+        if (not self.game.level_map.is_wall(check_x, self.y - buffer) and
+                not self.game.level_map.is_wall(check_x, self.y + buffer)):
             self.x += dx
-        if not self.game.level_map.is_wall(self.x, check_y + dy):
+
+        # Verify Y movement without corner clipping
+        if (not self.game.level_map.is_wall(self.x - buffer, check_y) and
+                not self.game.level_map.is_wall(self.x + buffer, check_y)):
             self.y += dy
 
         # Rotation from Touch Panning or Mouse or Keyboard Arrows
@@ -181,9 +186,14 @@ class Player:
         if keys[pg.K_RIGHT]:
             rot_delta += PLAYER_ROT_SPEED * dt
 
-        # Desktop mouse relative
+        # Desktop mouse relative with edge recentering and delta clamping
         if self.game.mouse_look_enabled:
+            mx, my = pg.mouse.get_pos()
+            if mx < 100 or mx > WIDTH - 100 or my < 100 or my > HEIGHT - 100:
+                pg.mouse.set_pos([HALF_WIDTH, HALF_HEIGHT])
+                pg.mouse.get_rel()  # discard recenter delta
             mouse_rel = pg.mouse.get_rel()[0]
+            mouse_rel = max(-100, min(100, mouse_rel))
             rot_delta += mouse_rel * MOUSE_SENSITIVITY
 
         self.rel = rot_delta

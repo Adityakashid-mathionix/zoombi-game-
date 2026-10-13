@@ -225,10 +225,11 @@ class TouchControlsManager:
                 self.trigger_button_action(btn.action_id)
                 return
 
-        # 3. Touch-look area on right half of screen
+        # 3. Touch-look area on right half of screen (only for touch or when mouse-look is off)
         if x > WIDTH // 2 and self.look_finger_id is None:
-            self.look_finger_id = fid
-            self.last_look_x = x
+            if fid != "mouse" or not self.game.mouse_look_enabled:
+                self.look_finger_id = fid
+                self.last_look_x = x
 
     def process_touch_motion(self, x, y, fid):
         if self.joystick.handle_touch_motion(x, y, fid):

@@ -5,7 +5,11 @@ Generates and loads all textures, 2.5D sprites, weapons, pickups, and mobile UI 
 import os
 import math
 import random
-from PIL import Image, ImageDraw
+try:
+    from PIL import Image, ImageDraw
+except ImportError:
+    Image = None
+    ImageDraw = None
 import pygame as pg
 from engine.settings import RES, WIDTH, HEIGHT, HALF_WIDTH, HALF_HEIGHT, TEXTURE_SIZE, HALF_TEXTURE_SIZE
 
@@ -599,40 +603,42 @@ class AssetManager:
         tex_dir = "assets/textures"
         os.makedirs(tex_dir, exist_ok=True)
 
-        # Build walls
-        AssetGenerator.create_wall_medical(os.path.join(tex_dir, "wall_medical.png"))
-        AssetGenerator.create_wall_subway(os.path.join(tex_dir, "wall_subway.png"))
-        AssetGenerator.create_wall_barricade(os.path.join(tex_dir, "wall_barricade.png"))
-        AssetGenerator.create_wall_chemical(os.path.join(tex_dir, "wall_chemical.png"))
-        AssetGenerator.create_wall_lab(os.path.join(tex_dir, "wall_lab.png"))
-        AssetGenerator.create_wall_greenhouse(os.path.join(tex_dir, "wall_greenhouse.png"))
-        AssetGenerator.create_wall_catacombs(os.path.join(tex_dir, "wall_catacombs.png"))
-        AssetGenerator.create_wall_airbase(os.path.join(tex_dir, "wall_airbase.png"))
+        # Only generate procedural assets if missing and PIL is available
+        if Image is not None and not os.path.exists(os.path.join(tex_dir, "wall_medical.png")):
+            # Build walls
+            AssetGenerator.create_wall_medical(os.path.join(tex_dir, "wall_medical.png"))
+            AssetGenerator.create_wall_subway(os.path.join(tex_dir, "wall_subway.png"))
+            AssetGenerator.create_wall_barricade(os.path.join(tex_dir, "wall_barricade.png"))
+            AssetGenerator.create_wall_chemical(os.path.join(tex_dir, "wall_chemical.png"))
+            AssetGenerator.create_wall_lab(os.path.join(tex_dir, "wall_lab.png"))
+            AssetGenerator.create_wall_greenhouse(os.path.join(tex_dir, "wall_greenhouse.png"))
+            AssetGenerator.create_wall_catacombs(os.path.join(tex_dir, "wall_catacombs.png"))
+            AssetGenerator.create_wall_airbase(os.path.join(tex_dir, "wall_airbase.png"))
 
-        # Build door textures (8 levels)
-        kc_colors = {
-            1: (230, 45, 55),
-            2: (245, 200, 35),
-            3: (35, 145, 245),
-            4: (45, 220, 80),
-            5: (190, 60, 245),
-            6: (255, 130, 25),
-            7: (220, 25, 45),
-            8: (245, 215, 30),
-        }
-        for lvl_id, col in kc_colors.items():
-            AssetGenerator.create_wall_door(os.path.join(tex_dir, f"door_level_{lvl_id}.png"), col)
-        AssetGenerator.create_wall_extraction(os.path.join(tex_dir, "wall_extraction.png"))
+            # Build door textures (8 levels)
+            kc_colors = {
+                1: (230, 45, 55),
+                2: (245, 200, 35),
+                3: (35, 145, 245),
+                4: (45, 220, 80),
+                5: (190, 60, 245),
+                6: (255, 130, 25),
+                7: (220, 25, 45),
+                8: (245, 215, 30),
+            }
+            for lvl_id, col in kc_colors.items():
+                AssetGenerator.create_wall_door(os.path.join(tex_dir, f"door_level_{lvl_id}.png"), col)
+            AssetGenerator.create_wall_extraction(os.path.join(tex_dir, "wall_extraction.png"))
 
-        # Sky and overlays
-        AssetGenerator.create_sky(os.path.join(tex_dir, "sky.png"))
-        AssetGenerator.create_blood_screen(os.path.join(tex_dir, "blood_screen.png"))
+            # Sky and overlays
+            AssetGenerator.create_sky(os.path.join(tex_dir, "sky.png"))
+            AssetGenerator.create_blood_screen(os.path.join(tex_dir, "blood_screen.png"))
 
-        # Sprites
-        AssetGenerator.create_zombie_sprites("assets/sprites/zombies")
-        AssetGenerator.create_survivor_sprites("assets/sprites/survivors")
-        AssetGenerator.create_weapon_viewmodels("assets/sprites/weapons")
-        AssetGenerator.create_pickups_and_ui("assets/sprites/pickups", "assets/ui")
+            # Sprites
+            AssetGenerator.create_zombie_sprites("assets/sprites/zombies")
+            AssetGenerator.create_survivor_sprites("assets/sprites/survivors")
+            AssetGenerator.create_weapon_viewmodels("assets/sprites/weapons")
+            AssetGenerator.create_pickups_and_ui("assets/sprites/pickups", "assets/ui")
 
         # Now load into Pygame surfaces
         self.load_surfaces()

@@ -34,10 +34,12 @@ class RayCasting:
             sub_x = int(offset * (TEXTURE_SIZE - SCALE))
             sub_x = max(0, min(TEXTURE_SIZE - SCALE, sub_x))
 
+            proj_h = max(1, int(proj_height))
+
             if proj_height < HEIGHT:
                 wall_column = texture.subsurface(sub_x, 0, SCALE, TEXTURE_SIZE)
-                wall_column = pg.transform.scale(wall_column, (SCALE, int(proj_height)))
-                wall_pos = (ray * SCALE, HALF_HEIGHT - int(proj_height) // 2)
+                wall_column = pg.transform.scale(wall_column, (SCALE, proj_h))
+                wall_pos = (ray * SCALE, HALF_HEIGHT - proj_h // 2)
             else:
                 tex_h = int(TEXTURE_SIZE * HEIGHT / proj_height)
                 tex_h = max(1, min(TEXTURE_SIZE, tex_h))
@@ -47,12 +49,11 @@ class RayCasting:
                 wall_column = pg.transform.scale(wall_column, (SCALE, HEIGHT))
                 wall_pos = (ray * SCALE, 0)
 
-            # Atmospheric distance fog shading
+            # Atmospheric distance fog shading (in-place multiplication for maximum performance)
             if depth > 3.0:
                 dark_factor = min(0.70, (depth - 3.0) / (MAX_DEPTH - 3.0))
-                dark_surf = pg.Surface(wall_column.get_size()).convert_alpha()
-                dark_surf.fill((0, 0, 0, int(dark_factor * 230)))
-                wall_column.blit(dark_surf, (0, 0))
+                shade = int(255 * (1.0 - dark_factor))
+                wall_column.fill((shade, shade, shade), special_flags=pg.BLEND_MULT)
 
             self.objects_to_render.append((depth, wall_column, wall_pos))
 

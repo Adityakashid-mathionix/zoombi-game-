@@ -27,7 +27,7 @@ from ui.dialogs import DebriefingModal, GameOverModal
 class Game:
     def __init__(self):
         pg.init()
-        pg.display.set_caption("Zombie Quarantine FPS - Operation Breakout")
+        pg.display.set_caption("Zombi Apploclips")
         self.screen = pg.display.set_mode(RES)
         self.clock = pg.time.Clock()
         self.delta_time = 1.0
@@ -90,6 +90,8 @@ class Game:
     def trigger_level_victory(self):
         """Called upon reaching extraction with survivor rescued."""
         self.state = "VICTORY"
+        self.mouse_look_enabled = False
+        pg.mouse.set_visible(True)
         lvl_id = self.level_map.level_id
         meta = self.level_map.meta
         user_id = self.firebase_service.cache["user_id"]
@@ -108,10 +110,13 @@ class Game:
 
     def trigger_game_over(self):
         self.state = "GAME_OVER"
+        self.mouse_look_enabled = False
+        pg.mouse.set_visible(True)
 
     def return_to_lobby(self):
         self.state = "LOBBY"
         self.mouse_look_enabled = False
+        pg.mouse.set_visible(True)
 
     def handle_events(self):
         for event in pg.event.get():
@@ -134,6 +139,9 @@ class Game:
                 if event.key in (pg.K_m, pg.K_TAB) and self.state == "GAMEPLAY":
                     self.mouse_look_enabled = not self.mouse_look_enabled
                     pg.mouse.set_visible(not self.mouse_look_enabled)
+                    if self.mouse_look_enabled:
+                        pg.mouse.set_pos([HALF_WIDTH, HALF_HEIGHT])
+                        pg.mouse.get_rel()  # flush residual delta
 
                 # Quick desktop weapon shortcuts
                 if self.state == "GAMEPLAY":
@@ -155,6 +163,14 @@ class Game:
                         self.weapon_manager.use_adrenaline()
                     elif event.key == pg.K_SPACE:
                         self.weapon_manager.shoot()
+
+                # Modal keyboard progression
+                elif self.state == "VICTORY":
+                    if event.key in (pg.K_RETURN, pg.K_SPACE):
+                        self.debriefing_modal.handle_click((WIDTH - 700) // 2 + 100, (HEIGHT - 520) // 2 + 520 - 50)
+                elif self.state == "GAME_OVER":
+                    if event.key in (pg.K_RETURN, pg.K_SPACE, pg.K_r):
+                        self.game_over_modal.handle_click(WIDTH // 2 - 120, HEIGHT // 2 + 65)
 
             # Mouse / touch desktop firing
             if event.type == pg.MOUSEBUTTONDOWN and self.state == "GAMEPLAY":
@@ -249,4 +265,10 @@ if __name__ == "__main__":
             game.start_mission(4)
         elif arg in ("5", "level5"):
             game.start_mission(5)
+        elif arg in ("6", "level6"):
+            game.start_mission(6)
+        elif arg in ("7", "level7"):
+            game.start_mission(7)
+        elif arg in ("8", "level8"):
+            game.start_mission(8)
     game.run()

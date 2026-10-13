@@ -171,6 +171,7 @@ class WeaponManager:
         self.is_firing = True
         self.anim_frame = 1  # Muzzle flash frame
         self.anim_timer = 90  # Duration of flash frame in ms
+        self.game.player.shots_fired += 1
 
         # Play weapon audio
         if self.current_weapon_key == "pistol":
@@ -229,12 +230,13 @@ class WeaponManager:
                         hit_npc = npc
 
         if hit_npc:
+            self.game.player.shots_hit += 1
             hit_npc.take_damage(damage)
 
     def check_wall_between(self, x1, y1, x2, y2):
         """Step along ray to check if wall obstructs line of sight."""
         dist = math.hypot(x2 - x1, y2 - y1)
-        steps = int(dist * 5)
+        steps = max(2, int(dist * 6))
         for i in range(1, steps):
             t = i / steps
             cx = x1 + (x2 - x1) * t

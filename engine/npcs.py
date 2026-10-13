@@ -39,15 +39,16 @@ class BaseSprite:
         self.dist = math.hypot(dx, dy)
         self.norm_dist = self.dist * math.cos(delta)
 
-        if self.norm_dist > 0.35 and abs(delta) < (math.pi / 2.2):
+        if self.norm_dist > 0.08 and abs(delta) < (math.pi / 2.0):
             delta_rays = delta / DELTA_ANGLE
             self.screen_x = (HALF_NUM_RAYS + delta_rays) * SCALE
 
             proj = (SCREEN_DIST / (self.norm_dist + 0.0001)) * self.scale
-            proj_w = int(proj)
-            proj_h = int(proj)
+            proj = min(HEIGHT * 3, proj)
+            proj_w = max(1, int(proj))
+            proj_h = max(1, int(proj))
 
-            if proj_w <= 0 or proj_h <= 0 or not self.current_surface:
+            if not self.current_surface:
                 return None
 
             scaled_img = pg.transform.scale(self.current_surface, (proj_w, proj_h))
@@ -55,9 +56,8 @@ class BaseSprite:
             # Apply distance shading
             if self.norm_dist > 3.0:
                 dark_factor = min(0.65, (self.norm_dist - 3.0) / 18.0)
-                dark_surf = pg.Surface((proj_w, proj_h)).convert_alpha()
-                dark_surf.fill((0, 0, 0, int(dark_factor * 220)))
-                scaled_img.blit(dark_surf, (0, 0))
+                shade = int(255 * (1.0 - dark_factor))
+                scaled_img.fill((shade, shade, shade), special_flags=pg.BLEND_MULT)
 
             pos_x = int(self.screen_x - proj_w // 2)
             pos_y = int(HALF_HEIGHT - proj_h // 2 + proj_h * self.height_shift)

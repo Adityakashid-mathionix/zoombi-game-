@@ -79,58 +79,58 @@ class InGameHUD:
         screen.blit(time_surf, (WIDTH - 270, 12))
 
     def draw_vitals(self, screen):
-        # Health & Armor Gauges (Lower Left)
+        # Health & Armor Gauges (Top Left, below title banner, avoiding virtual joystick)
         base_x = 20
-        base_y = HEIGHT - 90
+        base_y = 56
 
         # Background box
-        box_surf = pg.Surface((250, 75), pg.SRCALPHA)
-        box_surf.fill((15, 18, 22, 180))
-        pg.draw.rect(box_surf, (50, 60, 75), (0, 0, 250, 75), 2)
+        box_surf = pg.Surface((230, 68), pg.SRCALPHA)
+        box_surf.fill((15, 18, 22, 185))
+        pg.draw.rect(box_surf, (50, 60, 75), (0, 0, 230, 68), 2)
         screen.blit(box_surf, (base_x, base_y))
 
         # Health bar
         hp = max(0, min(100, self.game.player.health))
         hp_col = COLOR_GREEN if hp > 50 else COLOR_AMBER if hp > 25 else COLOR_BLOOD
-        pg.draw.rect(screen, (40, 20, 20), (base_x + 65, base_y + 12, 170, 20))
-        pg.draw.rect(screen, hp_col, (base_x + 65, base_y + 12, int(1.7 * hp), 20))
-        pg.draw.rect(screen, (80, 80, 80), (base_x + 65, base_y + 12, 170, 20), 1)
+        pg.draw.rect(screen, (40, 20, 20), (base_x + 65, base_y + 10, 150, 18))
+        pg.draw.rect(screen, hp_col, (base_x + 65, base_y + 10, int(1.5 * hp), 18))
+        pg.draw.rect(screen, (80, 80, 80), (base_x + 65, base_y + 10, 150, 18), 1)
 
         hp_label = self.font_hud.render(f"HP: {hp}", True, COLOR_WHITE)
-        screen.blit(hp_label, (base_x + 10, base_y + 12))
+        screen.blit(hp_label, (base_x + 10, base_y + 10))
 
         # Armor bar
         armor = max(0, min(100, self.game.player.armor))
-        pg.draw.rect(screen, (20, 35, 45), (base_x + 65, base_y + 42, 170, 20))
-        pg.draw.rect(screen, COLOR_CYAN, (base_x + 65, base_y + 42, int(1.7 * armor), 20))
-        pg.draw.rect(screen, (80, 80, 80), (base_x + 65, base_y + 42, 170, 20), 1)
+        pg.draw.rect(screen, (20, 35, 45), (base_x + 65, base_y + 36, 150, 18))
+        pg.draw.rect(screen, COLOR_CYAN, (base_x + 65, base_y + 36, int(1.5 * armor), 18))
+        pg.draw.rect(screen, (80, 80, 80), (base_x + 65, base_y + 36, 150, 18), 1)
 
         armor_label = self.font_hud.render(f"ARM: {armor}", True, COLOR_WHITE)
-        screen.blit(armor_label, (base_x + 10, base_y + 42))
+        screen.blit(armor_label, (base_x + 10, base_y + 36))
 
         # Adrenaline active indicator
         if self.game.player.adrenaline_active:
             ad_surf = self.font_small.render("STIM ACTIVE (+45% SPD)", True, (0, 240, 255))
-            screen.blit(ad_surf, (base_x + 10, base_y - 22))
+            screen.blit(ad_surf, (base_x + 10, base_y + 74))
 
     def draw_ammo_and_tactical(self, screen):
-        # Ammo counter & Weapon name (Lower Right)
+        # Ammo counter & Weapon name (Under minimap on Top-Right, avoiding touch action buttons)
         wm = self.game.weapon_manager
         cur_weapon = wm.current_weapon_key
         clip, reserve = wm.ammo_state[cur_weapon]
         cfg = wm.current_config
 
-        box_x = WIDTH - 260
-        box_y = HEIGHT - 85
+        box_x = WIDTH - 225
+        box_y = 175
 
-        box_surf = pg.Surface((240, 75), pg.SRCALPHA)
-        box_surf.fill((15, 18, 22, 180))
-        pg.draw.rect(box_surf, (50, 60, 75), (0, 0, 240, 75), 2)
+        box_surf = pg.Surface((210, 68), pg.SRCALPHA)
+        box_surf.fill((15, 18, 22, 185))
+        pg.draw.rect(box_surf, (50, 60, 75), (0, 0, 210, 68), 2)
         screen.blit(box_surf, (box_x, box_y))
 
         # Weapon Name
         name_surf = self.font_hud.render(cfg["name"], True, COLOR_AMBER)
-        screen.blit(name_surf, (box_x + 12, box_y + 10))
+        screen.blit(name_surf, (box_x + 12, box_y + 8))
 
         # Ammo digits
         if wm.is_reloading:
@@ -141,20 +141,20 @@ class InGameHUD:
             ammo_col = COLOR_WHITE if clip > 2 else COLOR_BLOOD
 
         ammo_surf = self.font_large.render(ammo_str, True, ammo_col)
-        screen.blit(ammo_surf, (box_x + 12, box_y + 32))
+        screen.blit(ammo_surf, (box_x + 12, box_y + 28))
 
         # Tactical Equipment Counts (Frag Grenades, Medkits, Keycards)
         inv = wm.inventory
-        tact_surf = pg.Surface((220, 34), pg.SRCALPHA)
-        tact_surf.fill((12, 14, 18, 190))
-        pg.draw.rect(tact_surf, (40, 45, 55), (0, 0, 220, 34), 1)
-        screen.blit(tact_surf, (box_x, box_y - 42))
+        tact_surf = pg.Surface((210, 28), pg.SRCALPHA)
+        tact_surf.fill((12, 14, 18, 195))
+        pg.draw.rect(tact_surf, (40, 45, 55), (0, 0, 210, 28), 1)
+        screen.blit(tact_surf, (box_x, box_y + 72))
 
-        # Badges list
+        # Cards and equipment list
         cards_str = ",".join(k.upper() for k in inv["keycards"]) if inv["keycards"] else "NONE"
         tact_text = f"MED: {inv['medkit']} | GREN: {inv['grenade']} | KEY: {cards_str}"
         tact_label = self.font_small.render(tact_text, True, COLOR_WHITE)
-        screen.blit(tact_label, (box_x + 10, box_y - 34))
+        screen.blit(tact_label, (box_x + 8, box_y + 78))
 
     def draw_minimap(self, screen):
         # Minimap radar on Top-Right

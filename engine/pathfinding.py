@@ -62,4 +62,4 @@ class PathFinding:
         step = goal
         while visited.get(step) and visited[step] != start:
             step = visited[step]
-        return step if step != goal else start
+        return step

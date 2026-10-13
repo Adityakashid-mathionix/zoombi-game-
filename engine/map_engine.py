@@ -465,7 +465,10 @@ class LevelMap:
 
     def is_wall(self, x, y):
         """Check if grid coordinate contains a solid obstacle or locked door."""
-        tile = (int(x), int(y))
+        ix, iy = int(x), int(y)
+        if ix < 0 or ix >= self.cols or iy < 0 or iy >= self.rows:
+            return True
+        tile = (ix, iy)
         if tile in self.door_positions:
             # If door is open, it does not block
             return not self.door_positions[tile]["open"]

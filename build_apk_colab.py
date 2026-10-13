@@ -1,31 +1,37 @@
 # ==============================================================================
-# Google Colab 1-Click APK Builder for Zombie Quarantine FPS Mobile Engine
+# Google Colab 1-Click APK Builder for Zombi Apploclips
 # ==============================================================================
-# 1. Open Google Colab: https://colab.research.google.com/
-# 2. Select: Runtime -> Change runtime type -> Python 3
-# 3. Create a code cell and paste the following commands:
+# Instructions:
+# 1. Open Google Colab in your browser: https://colab.research.google.com/
+# 2. Click "New Notebook"
+# 3. Copy and run the following code blocks:
 
-# Step 1: Install buildozer dependencies & JDK
+# --- Cell 1: Install Buildozer & System Dependencies ---
 !sudo apt-get update -qq
 !sudo apt-get install -y -qq git zip unzip autoconf libtool pkg-config zlib1g-dev libncurses5-dev libncursesw5-dev libtinfo5 cmake libffi-dev libssl-dev build-essential ccache openjdk-17-jdk
-
-# Step 2: Install buildozer & cython
 !pip install --upgrade Cython==0.29.36 buildozer python-for-android
 
-# Step 3: Clone or upload your game repository
-# !git clone <YOUR_GITHUB_REPO_URL> game
-# %cd game
+# --- Cell 2: Upload the Game Source Zip ---
+# Upload "Zombi_Apploclips_Source_For_APK.zip" from your computer:
+from google.colab import files
+import os
 
-# Step 4: Build Android APK
+if not os.path.exists("main.py"):
+    uploaded = files.upload()
+    for filename in uploaded.keys():
+        if filename.endswith(".zip"):
+            !unzip -o "$filename"
+
+# --- Cell 3: Build the Android APK ---
 !buildozer -v android debug
 
-# Step 5: Download the generated APK directly from Google Colab
-from google.colab import files
+# --- Cell 4: Automatic Download of the Compiled APK ---
 import glob
+from google.colab import files
 
 apk_files = glob.glob("bin/*.apk")
 if apk_files:
-    print(f"Generated APK: {apk_files[0]}")
+    print(f"Build successful! Downloading APK: {apk_files[0]}")
     files.download(apk_files[0])
 else:
-    print("Build did not produce an APK file. Check the log output above.")
+    print("No APK found in bin/. Check the build logs above.")

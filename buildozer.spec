@@ -1,13 +1,13 @@
 [app]
 
 # (str) Title of your application
-title = Zombie Quarantine FPS
+title = Zombi Apploclips
 
 # (str) Package name
-package.name = quarantine_breakout
+package.name = zombi_apploclips
 
 # (str) Package domain (needed for android/ios packaging)
-package.domain = org.apocalypse
+package.domain = org.zombiapploclips
 
 # (str) Source code where the main.py lives
 source.dir = .
@@ -26,13 +26,13 @@ version = 1.0.0
 
 # (list) Application requirements
 # comma separated e.g. requirements = sqlite3,kivy
-requirements = python3,pygame-ce,pillow,urllib3
+requirements = python3,pygame-ce,pillow,requests,urllib3
 
 # (str) Presplash of the application
 # presplash.filename = %(source.dir)s/assets/ui/presplash.png
 
 # (str) Icon of the application
-# icon.filename = %(source.dir)s/assets/ui/icon.png
+icon.filename = %(source.dir)s/webapp/icon.png
 
 # (str) Supported orientation (one of landscape, sensorLandscape, portrait or all)
 orientation = landscape
