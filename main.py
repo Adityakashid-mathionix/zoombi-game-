@@ -87,11 +87,8 @@ class Game:
 
         self.elapsed_time = 0.0
         self.state = "GAMEPLAY"
-        # Auto-enable desktop mouse look for smooth first-person aiming
-        self.mouse_look_enabled = True
-        pg.mouse.set_visible(False)
-        pg.mouse.set_pos([HALF_WIDTH, HALF_HEIGHT])
-        pg.mouse.get_rel()
+        self.mouse_look_enabled = False
+        pg.mouse.set_visible(True)
 
     def trigger_level_victory(self):
         """Called upon reaching extraction with survivor rescued."""
@@ -136,11 +133,7 @@ class Game:
             if event.type == pg.KEYDOWN:
                 if event.key == pg.K_ESCAPE:
                     if self.state == "GAMEPLAY":
-                        if self.mouse_look_enabled:
-                            self.mouse_look_enabled = False
-                            pg.mouse.set_visible(True)
-                        else:
-                            self.return_to_lobby()
+                        self.return_to_lobby()
                     elif self.state in ("VICTORY", "GAME_OVER"):
                         self.return_to_lobby()
                     else:
@@ -180,27 +173,14 @@ class Game:
                 elif self.state == "VICTORY":
                     if event.key in (pg.K_RETURN, pg.K_SPACE):
                         self.debriefing_modal.handle_click((WIDTH - 700) // 2 + 100, (HEIGHT - 520) // 2 + 520 - 50)
-                    elif event.key == pg.K_ESCAPE:
-                        self.return_to_lobby()
                 elif self.state == "GAME_OVER":
                     if event.key in (pg.K_RETURN, pg.K_SPACE, pg.K_r):
                         self.game_over_modal.handle_click(WIDTH // 2 - 120, HEIGHT // 2 + 65)
-                    elif event.key == pg.K_ESCAPE:
-                        self.return_to_lobby()
 
-            # Mouse click in gameplay
+            # Mouse / touch desktop firing
             if event.type == pg.MOUSEBUTTONDOWN and self.state == "GAMEPLAY":
-                if event.button == 1:
-                    # Left click: auto-lock mouse if unlocked, and shoot weapon
-                    if not self.mouse_look_enabled:
-                        self.mouse_look_enabled = True
-                        pg.mouse.set_visible(False)
-                        pg.mouse.set_pos([HALF_WIDTH, HALF_HEIGHT])
-                        pg.mouse.get_rel()
+                if event.button == 1 and self.mouse_look_enabled:
                     self.weapon_manager.shoot()
-                elif event.button == 3:
-                    # Right click: interact / rescue / unlock door
-                    self.player.interact()
 
             # State-specific event handling
             if self.state == "LOBBY":

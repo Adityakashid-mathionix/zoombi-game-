@@ -272,9 +272,6 @@ class TouchControlsManager:
         return delta
 
     def draw(self, screen):
-        # On desktop keyboard/mouse, do not clutter screen with virtual mobile buttons
-        if not getattr(self, "touch_active", False):
-            return
         self.joystick.draw(screen)
         for btn in self.buttons:
             font = self.large_font if btn.action_id == "shoot" else self.font
