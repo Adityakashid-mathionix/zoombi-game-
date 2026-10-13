@@ -32,7 +32,7 @@ requirements = python3,pygame-ce,pillow,requests,urllib3
 # presplash.filename = %(source.dir)s/assets/ui/presplash.png
 
 # (str) Icon of the application
-icon.filename = %(source.dir)s/webapp/icon.png
+icon.filename = %(source.dir)s/assets/ui/icon.png
 
 # (str) Supported orientation (one of landscape, sensorLandscape, portrait or all)
 orientation = landscape

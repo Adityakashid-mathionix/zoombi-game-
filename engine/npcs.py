@@ -115,7 +115,7 @@ class PickupSprite(BaseSprite):
 
 
 class SurvivorNPC(BaseSprite):
-    """Level specific VIP Survivor waiting for extraction."""
+    """Level specific VIP Survivor waiting for extraction with audio/visual help shouts and escort behavior."""
     def __init__(self, game, level_id, x, y):
         super().__init__(game, x, y, scale=0.78, height_shift=0.22)
         self.level_id = level_id
@@ -124,21 +124,57 @@ class SurvivorNPC(BaseSprite):
         self.anim_timer = 0
         self.rescued = False
         self.current_surface = self.frames[0] if self.frames else None
+        self.shout_cooldown = 1200
+        self.shouts = [
+            "HELP! OVER HERE, SERGEANT!",
+            "PLEASE SAVE ME! I'M TRAPPED IN HERE!",
+            "SERGEANT VANCE! BEHIND THIS DOOR!",
+            "HELP ME! THE HORDE IS CLOSING IN!",
+            "OVER HERE! I HAVE THE RESEARCH INTEL!",
+        ]
 
     def update(self, dt):
         # Idle breathing / waving animation
         self.anim_timer += dt
         if self.anim_timer >= 450:
             self.anim_timer = 0
-            self.anim_idx = (self.anim_idx + 1) % len(self.frames)
-            self.current_surface = self.frames[self.anim_idx]
+            self.anim_idx = (self.anim_idx + 1) % len(self.frames) if self.frames else 0
+            if self.frames:
+                self.current_surface = self.frames[self.anim_idx]
 
-        # Check proximity to player
         dist = math.hypot(self.game.player.x - self.x, self.game.player.y - self.y)
-        if dist < 2.0 and not self.rescued:
-            self.game.player.near_survivor = self
-        elif self.game.player.near_survivor == self and dist >= 2.0:
-            self.game.player.near_survivor = None
+
+        # 1. Proximity Shouting for Help (when player gets closer and survivor is still trapped)
+        if not self.rescued:
+            if dist <= 6.5:
+                self.shout_cooldown -= dt
+                if self.shout_cooldown <= 0:
+                    self.shout_cooldown = 3500
+                    shout_msg = random.choice(self.shouts)
+                    meta = self.game.level_map.meta
+                    self.game.hud.show_message(f"🚨 {meta['survivor'].upper()}: \"{shout_msg}\"", (255, 215, 50), 3200)
+                    if hasattr(self.game.sound_manager, "play_survivor_help"):
+                        self.game.sound_manager.play_survivor_help()
+                    else:
+                        self.game.sound_manager.play("rescue")
+
+            # Check interaction range for keycard unlock/rescue
+            if dist < 2.0:
+                self.game.player.near_survivor = self
+            elif self.game.player.near_survivor == self and dist >= 2.0:
+                self.game.player.near_survivor = None
+
+        # 2. Rescued Companion Escort Follower: follows behind player toward EVAC
+        else:
+            if dist > 1.6:
+                angle = math.atan2(self.game.player.y - self.y, self.game.player.x - self.x)
+                speed = 0.0022 * dt
+                dx = math.cos(angle) * speed
+                dy = math.sin(angle) * speed
+                if not self.game.level_map.is_wall(self.x + dx * 1.5, self.y):
+                    self.x += dx
+                if not self.game.level_map.is_wall(self.x, self.y + dy * 1.5):
+                    self.y += dy
 
     def rescue(self):
         if self.rescued:
@@ -147,11 +183,15 @@ class SurvivorNPC(BaseSprite):
         self.game.level_map.survivor_rescued = True
         self.game.level_map.extraction_unlocked = True
         self.game.sound_manager.play_rescue()
-        self.game.hud.show_dialog_rescue(self.level_id)
+        meta = self.game.level_map.meta
+        self.game.hud.show_message(
+            f"★ RESCUED {meta['survivor'].upper()}! \"Thank you Vance, I'm right behind you to Evac!\"",
+            (60, 240, 120), 4500
+        )
 
 
 class ZombieNPC(BaseSprite):
-    """Aggressive zombie swarms: Walker, Runner, Spitter, and Brute."""
+    """Aggressive zombie swarms with Level-by-Level difficulty progression."""
     def __init__(self, game, zombie_type, x, y):
         super().__init__(game, x, y, scale=0.75, height_shift=0.25)
         self.zombie_type = zombie_type
@@ -160,38 +200,44 @@ class ZombieNPC(BaseSprite):
         self.anim_idx = 0
         self.anim_timer = 0
 
-        # Stats & visual projection calibrated for reference DOOM retro sprites
+        # Level-by-Level Difficulty Scaling (Level 1 = normal, Level 8 = lethal hazard)
+        lvl = getattr(self.game.level_map, "level_id", 1)
+        diff_hp = 1.0 + (lvl - 1) * 0.18    # +18% HP per level tier
+        diff_dmg = 1.0 + (lvl - 1) * 0.14   # +14% damage per level tier
+        diff_spd = 1.0 + (lvl - 1) * 0.05   # +5% speed per level tier
+
+        # Stats calibrated with difficulty multipliers
         if zombie_type == "runner":
-            self.health = 70
-            self.speed = 0.0028
-            self.damage = 14
+            self.health = int(70 * diff_hp)
+            self.speed = 0.0028 * diff_spd
+            self.damage = int(14 * diff_dmg)
             self.attack_range = 1.1
             self.scale = 0.60
             self.height_shift = 0.38
         elif zombie_type == "spitter":
-            self.health = 80
-            self.speed = 0.0018
-            self.damage = 18
+            self.health = int(80 * diff_hp)
+            self.speed = 0.0018 * diff_spd
+            self.damage = int(18 * diff_dmg)
             self.attack_range = 3.5  # Ranged acid spitter
             self.scale = 0.70
             self.height_shift = 0.27
         elif zombie_type == "brute":
-            self.health = 260
-            self.speed = 0.0015
-            self.damage = 28
+            self.health = int(260 * diff_hp)
+            self.speed = 0.0015 * diff_spd
+            self.damage = int(28 * diff_dmg)
             self.attack_range = 1.3
             self.scale = 1.00
             self.height_shift = 0.04
         else:  # walker
-            self.health = 95
-            self.speed = 0.0017
-            self.damage = 12
+            self.health = int(95 * diff_hp)
+            self.speed = 0.0017 * diff_spd
+            self.damage = int(12 * diff_dmg)
             self.attack_range = 1.1
             self.scale = 0.60
             self.height_shift = 0.38
 
         self.last_attack_time = 0
-        self.attack_cooldown_ms = 900
+        self.attack_cooldown_ms = max(550, int(900 - (lvl - 1) * 45))
         self.current_surface = self.get_frame("idle", 0)
 
     def get_frame(self, state, idx):

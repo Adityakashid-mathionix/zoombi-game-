@@ -143,6 +143,14 @@ class ProceduralSoundGenerator:
             tone = math.sin(2 * math.pi * f * t) + (random.random() * 2 - 1) * 0.4
             return tone * 0.5 * env
 
+        # 14. Survivor "Help!" Distress Call (Urgent vocal alarm shout)
+        def survivor_help_sfx(t, dur, i):
+            env = math.exp(-4.5 * (t % 0.38))
+            f = 460 + 380 * math.sin(2 * math.pi * 3.5 * t)
+            tone = math.sin(2 * math.pi * f * t) + 0.35 * math.sin(3 * math.pi * f * t)
+            noise = (random.random() * 2 - 1) * 0.12
+            return (tone * 0.85 + noise) * env
+
         sfx_catalog = [
             ("pistol.wav", pistol_sfx, 0.25),
             ("shotgun.wav", shotgun_sfx, 0.55),
@@ -157,6 +165,7 @@ class ProceduralSoundGenerator:
             ("pain.wav", pain_sfx, 0.28),
             ("adrenaline.wav", adrenaline_sfx, 0.60),
             ("reload.wav", reload_sfx, 0.45),
+            ("survivor_help.wav", survivor_help_sfx, 0.75),
         ]
 
         for fname, func, dur in sfx_catalog:
@@ -206,6 +215,7 @@ class SoundManager:
             "pain": "assets/sound/pain.wav",
             "adrenaline": "assets/sound/adrenaline.wav",
             "reload": "assets/sound/reload.wav",
+            "survivor_help": "assets/sound/survivor_help.wav",
         }
 
         # Also check reference_doom sounds as alternatives
@@ -309,3 +319,9 @@ class SoundManager:
 
     def play_reload(self):
         self.play("reload")
+
+    def play_survivor_help(self):
+        if "survivor_help" in self.sounds:
+            self.play("survivor_help")
+        else:
+            self.play("rescue")
