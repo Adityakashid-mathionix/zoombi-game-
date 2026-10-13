@@ -732,7 +732,13 @@ class AssetManager:
                         frames.append(self.load_texture(os.path.join(s_dir, fname), (256, 256)))
             self.survivor_sprites[lvl_id] = frames if frames else [self.create_fallback_sprite((40, 180, 240))]
 
-        # Load Weapon Viewmodels
+        # Load Win and Game Over screens
+        win_path = os.path.join(tex_dir, "win.png")
+        self.win_image = self.load_texture(win_path, RES) if os.path.exists(win_path) else None
+        go_path = os.path.join(tex_dir, "game_over.png")
+        self.game_over_image = self.load_texture(go_path, RES) if os.path.exists(go_path) else None
+
+        # Load Weapon Viewmodels (Scale large shotgun frames to 40% to fit screen cleanly)
         w_base = "assets/sprites/weapons"
         for w_name in ("pistol", "shotgun", "rifle"):
             w_dir = os.path.join(w_base, w_name)
@@ -740,7 +746,12 @@ class AssetManager:
             if os.path.exists(w_dir):
                 for fname in sorted(os.listdir(w_dir)):
                     if fname.endswith(".png"):
-                        frames.append(pg.image.load(os.path.join(w_dir, fname)).convert_alpha())
+                        img = pg.image.load(os.path.join(w_dir, fname)).convert_alpha()
+                        if w_name == "shotgun":
+                            sw = int(img.get_width() * 0.40)
+                            sh = int(img.get_height() * 0.40)
+                            img = pg.transform.smoothscale(img, (sw, sh))
+                        frames.append(img)
             self.weapon_sprites[w_name] = frames
 
     def create_fallback_sprite(self, color):

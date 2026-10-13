@@ -7,3 +7,4 @@ bin/
 .env
 reference_doom/
 *.zip
+scratch/

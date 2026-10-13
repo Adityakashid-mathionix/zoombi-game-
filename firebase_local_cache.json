@@ -13,15 +13,15 @@
     7,
     8
   ],
-  "currency": 11750,
+  "currency": 13750,
   "loadout": {
     "primary_weapon": "shotgun",
     "tactical_item": "medkit"
   },
   "stats": {
     "total_kills": 0,
-    "survivors_rescued": 45,
-    "missions_completed": 45,
+    "survivors_rescued": 53,
+    "missions_completed": 53,
     "best_times": {}
   }
 }

@@ -92,6 +92,7 @@ class Game:
         self.state = "VICTORY"
         self.mouse_look_enabled = False
         pg.mouse.set_visible(True)
+        self.debriefing_modal.reset()
         lvl_id = self.level_map.level_id
         meta = self.level_map.meta
         user_id = self.firebase_service.cache["user_id"]
@@ -112,6 +113,7 @@ class Game:
         self.state = "GAME_OVER"
         self.mouse_look_enabled = False
         pg.mouse.set_visible(True)
+        self.game_over_modal.reset()
 
     def return_to_lobby(self):
         self.state = "LOBBY"
@@ -216,6 +218,12 @@ class Game:
 
             # HUD timers and notices
             self.hud.update(dt)
+
+        elif self.state == "VICTORY":
+            self.debriefing_modal.update(dt)
+
+        elif self.state == "GAME_OVER":
+            self.game_over_modal.update(dt)
 
     def draw(self):
         if self.state == "LOBBY":

@@ -74,9 +74,12 @@
         "timestamp": 1791904352
       },
       {
-        "username": "GhostOperative",
-        "clear_time_seconds": 42.5,
-        "zombies_killed": 9
+        "user_id": "anon_c5bdfa01",
+        "username": "Operative_Vance",
+        "level_id": 1,
+        "clear_time_seconds": 0.0,
+        "zombies_killed": 1,
+        "timestamp": 1791907053
       }
     ],
     "2": [
@@ -235,6 +238,17 @@
         "clear_time_seconds": 0.0,
         "zombies_killed": 1,
         "timestamp": 1791904352
+      }
+    },
+    {
+      "endpoint": "level_leaderboards",
+      "payload": {
+        "user_id": "anon_c5bdfa01",
+        "username": "Operative_Vance",
+        "level_id": 1,
+        "clear_time_seconds": 0.0,
+        "zombies_killed": 1,
+        "timestamp": 1791907053
       }
     }
   ]
