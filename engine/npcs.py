@@ -160,31 +160,35 @@ class ZombieNPC(BaseSprite):
         self.anim_idx = 0
         self.anim_timer = 0
 
-        # Stats based on type
+        # Stats & visual projection calibrated for reference DOOM retro sprites
         if zombie_type == "runner":
             self.health = 70
             self.speed = 0.0028
             self.damage = 14
             self.attack_range = 1.1
-            self.scale = 0.72
+            self.scale = 0.60
+            self.height_shift = 0.38
         elif zombie_type == "spitter":
             self.health = 80
             self.speed = 0.0018
             self.damage = 18
             self.attack_range = 3.5  # Ranged acid spitter
-            self.scale = 0.80
+            self.scale = 0.70
+            self.height_shift = 0.27
         elif zombie_type == "brute":
             self.health = 260
             self.speed = 0.0015
             self.damage = 28
             self.attack_range = 1.3
-            self.scale = 1.10
+            self.scale = 1.00
+            self.height_shift = 0.04
         else:  # walker
             self.health = 95
             self.speed = 0.0017
             self.damage = 12
             self.attack_range = 1.1
-            self.scale = 0.78
+            self.scale = 0.60
+            self.height_shift = 0.38
 
         self.last_attack_time = 0
         self.attack_cooldown_ms = 900

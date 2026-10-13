@@ -1,0 +1,33 @@
+================================================================================
+🧟‍♂️ ZOMBI APPLOCLIPS (ZOMBIE QUARANTINE FPS) - MOBILE SETUP GUIDE
+================================================================================
+
+HOW TO PLAY DIRECTLY ON YOUR ANDROID PHONE USING PYDROID 3:
+------------------------------------------------------------
+1. Install "Pydroid 3 - IDE for Python 3" from Google Play Store on your Android phone.
+   Link: https://play.google.com/store/apps/details?id=ru.iiec.pydroid3
+
+2. Send this folder (or unzip 'Zombi_Apploclips_Source_For_APK.zip') to your phone's
+   Internal Storage (e.g., Download or Documents folder).
+
+3. In Pydroid 3:
+   - Tap the Menu (☰) -> Pip -> Quick Install -> Type: pygame-ce -> Tap INSTALL.
+   - (Also install 'pillow' and 'requests' from the Pip menu).
+
+4. Open the project in Pydroid 3:
+   - Tap Folder icon -> Open -> Browse to this folder -> Select 'main.py'.
+
+5. Tap the big Yellow ▶ (PLAY) button!
+   The game will start in full screen with on-screen virtual joysticks and touch buttons!
+
+MOBILE CONTROLS:
+----------------
+- Left Thumbstick: Move & Strafe (Forward, Backward, Left, Right)
+- Right Half of Screen: Swipe smoothly to Look / Turn around
+- Red Button: FIRE (Shotgun, Rifle, Pistol)
+- Amber Button: RELOAD
+- Cyan Button: SWITCH WEAPON
+- Green Button: ACTION / RESCUE SURVIVOR / UNLOCK GATES
+- Orange Button: THROW FRAG GRENADE
+- Teal Button: USE HEAL MEDKIT
+================================================================================

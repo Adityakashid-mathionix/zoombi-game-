@@ -278,8 +278,13 @@ class WeaponManager:
         if self.is_firing:
             self.anim_timer -= dt
             if self.anim_timer <= 0:
-                self.is_firing = False
-                self.anim_frame = 0
+                self.anim_frame += 1
+                frames = self.game.asset_manager.weapon_sprites.get(self.current_weapon_key, [])
+                if self.anim_frame < len(frames):
+                    self.anim_timer = 70
+                else:
+                    self.is_firing = False
+                    self.anim_frame = 0
 
         # Update active grenades
         for g in list(self.active_grenades):

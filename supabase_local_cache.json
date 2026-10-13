@@ -58,19 +58,25 @@
         "timestamp": 1791818136
       },
       {
+        "user_id": "anon_c5bdfa01",
+        "username": "Operative_Vance",
+        "level_id": 1,
+        "clear_time_seconds": 0.0,
+        "zombies_killed": 1,
+        "timestamp": 1791900050
+      },
+      {
+        "user_id": "anon_c5bdfa01",
+        "username": "Operative_Vance",
+        "level_id": 1,
+        "clear_time_seconds": 0.0,
+        "zombies_killed": 1,
+        "timestamp": 1791904352
+      },
+      {
         "username": "GhostOperative",
         "clear_time_seconds": 42.5,
         "zombies_killed": 9
-      },
-      {
-        "username": "Vance_Actual",
-        "clear_time_seconds": 48.2,
-        "zombies_killed": 8
-      },
-      {
-        "username": "ZombieHunter99",
-        "clear_time_seconds": 55.0,
-        "zombies_killed": 7
       }
     ],
     "2": [
@@ -196,6 +202,39 @@
         "clear_time_seconds": 0.0,
         "zombies_killed": 1,
         "timestamp": 1791818136
+      }
+    },
+    {
+      "endpoint": "level_leaderboards",
+      "payload": {
+        "user_id": "anon_c5bdfa01",
+        "username": "Operative_Vance",
+        "level_id": 1,
+        "clear_time_seconds": 0.0,
+        "zombies_killed": 1,
+        "timestamp": 1791900050
+      }
+    },
+    {
+      "endpoint": "level_leaderboards",
+      "payload": {
+        "user_id": "anon_c5bdfa01",
+        "username": "Operative_Vance",
+        "level_id": 1,
+        "clear_time_seconds": 101.1,
+        "zombies_killed": 8,
+        "timestamp": 1791903864
+      }
+    },
+    {
+      "endpoint": "level_leaderboards",
+      "payload": {
+        "user_id": "anon_c5bdfa01",
+        "username": "Operative_Vance",
+        "level_id": 1,
+        "clear_time_seconds": 0.0,
+        "zombies_killed": 1,
+        "timestamp": 1791904352
       }
     }
   ]
