@@ -49,12 +49,6 @@ class RayCasting:
                 wall_column = pg.transform.scale(wall_column, (SCALE, HEIGHT))
                 wall_pos = (ray * SCALE, 0)
 
-            # Atmospheric distance fog shading (in-place multiplication for maximum performance)
-            if depth > 3.0:
-                dark_factor = min(0.70, (depth - 3.0) / (MAX_DEPTH - 3.0))
-                shade = int(255 * (1.0 - dark_factor))
-                wall_column.fill((shade, shade, shade), special_flags=pg.BLEND_MULT)
-
             self.objects_to_render.append((depth, wall_column, wall_pos))
 
     def ray_cast(self):

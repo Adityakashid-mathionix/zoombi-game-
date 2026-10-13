@@ -272,6 +272,17 @@
         "zombies_killed": 1,
         "timestamp": 1791908813
       }
+    },
+    {
+      "endpoint": "level_leaderboards",
+      "payload": {
+        "user_id": "anon_c5bdfa01",
+        "username": "Operative_Vance",
+        "level_id": 1,
+        "clear_time_seconds": 0.0,
+        "zombies_killed": 1,
+        "timestamp": 1791909760
+      }
     }
   ]
 }

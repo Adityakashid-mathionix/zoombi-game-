@@ -685,6 +685,15 @@ class AssetManager:
         self.blood_screen = self.load_texture(os.path.join(tex_dir, "blood_screen.png"), RES)
         self.crosshair = self.load_texture("assets/ui/crosshair.png", (48, 48))
 
+        # DOOM HUD Digit textures
+        digit_dir = os.path.join(tex_dir, "digits")
+        self.digit_textures = {}
+        if os.path.exists(digit_dir):
+            for i in range(11):
+                p = os.path.join(digit_dir, f"{i}.png")
+                if os.path.exists(p):
+                    self.digit_textures[str(i)] = self.load_texture(p, (38, 38))
+
         # Pickups
         p_dir = "assets/sprites/pickups"
         self.pickup_sprites = {

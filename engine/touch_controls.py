@@ -147,6 +147,7 @@ class TouchControlsManager:
         self.look_finger_id = None
         self.last_look_x = 0
         self.look_delta = 0.0
+        self.touch_active = False
 
         # Action Buttons Layout (Right side of mobile landscape screen)
         # 1. SHOOT (Large Red)
@@ -186,6 +187,7 @@ class TouchControlsManager:
         """Processes Pygame touch and mouse events."""
         # Multi-touch events (mobile / SDL)
         if event.type == pg.FINGERDOWN:
+            self.touch_active = True
             x = event.x * WIDTH
             y = event.y * HEIGHT
             fid = event.finger_id
@@ -270,6 +272,9 @@ class TouchControlsManager:
         return delta
 
     def draw(self, screen):
+        # On desktop keyboard/mouse, do not clutter screen with virtual mobile buttons
+        if not getattr(self, "touch_active", False):
+            return
         self.joystick.draw(screen)
         for btn in self.buttons:
             font = self.large_font if btn.action_id == "shoot" else self.font

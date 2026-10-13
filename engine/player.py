@@ -5,7 +5,7 @@ keyboard/mouse & virtual touch joystick movement, interactions, and objectives.
 import math
 import pygame as pg
 from engine.settings import (
-    PLAYER_POS, PLAYER_ANGLE, PLAYER_SPEED, PLAYER_ROT_SPEED,
+    WIDTH, HEIGHT, PLAYER_POS, PLAYER_ANGLE, PLAYER_SPEED, PLAYER_ROT_SPEED,
     PLAYER_MAX_HEALTH, PLAYER_MAX_ARMOR, MOUSE_SENSITIVITY,
     TOUCH_LOOK_SENSITIVITY, HALF_WIDTH, HALF_HEIGHT
 )
@@ -117,6 +117,26 @@ class Player:
                 return False
         return False
 
+    def check_wall(self, x, y):
+        """Returns True if world position (x, y) is passable and not a wall or closed door."""
+        return not self.game.level_map.is_wall(x, y)
+
+    def check_wall_collision(self, dx, dy):
+        """Authentic DOOM wall sliding physics: tests X and Y movement axes independently."""
+        radius = 0.22  # Player collision radius in world grid units
+
+        # Test and apply X movement
+        if dx != 0.0:
+            check_x = self.x + dx + (radius if dx > 0 else -radius)
+            if self.check_wall(check_x, self.y):
+                self.x += dx
+
+        # Test and apply Y movement
+        if dy != 0.0:
+            check_y = self.y + dy + (radius if dy > 0 else -radius)
+            if self.check_wall(self.x, check_y):
+                self.y += dy
+
     def update_movement(self, dt, touch_move_x=0.0, touch_move_y=0.0, touch_look=0.0):
         # Calculate speed with adrenaline multiplier
         base_speed = PLAYER_SPEED * (1.45 if self.adrenaline_active else 1.0) * dt
@@ -126,58 +146,57 @@ class Player:
         # Touch Virtual Joystick Input
         if abs(touch_move_x) > 0.05 or abs(touch_move_y) > 0.05:
             self.is_moving = True
-            # Forward/backward relative to player angle
             sin_a = math.sin(self.angle)
             cos_a = math.cos(self.angle)
 
-            # touch_move_y is forward/backward (-1 is up/forward, 1 is down/backward)
-            # touch_move_x is strafe left/right (-1 is left, 1 is right)
             fwd = -touch_move_y * base_speed
             strafe = touch_move_x * base_speed
 
-            dx += fwd * cos_a - strafe * sin_a
-            dy += fwd * sin_a + strafe * cos_a
+            joy_dx = fwd * cos_a - strafe * sin_a
+            joy_dy = fwd * sin_a + strafe * cos_a
 
-        # Desktop Keyboard Fallback
+            # Diagonal normalization for joystick
+            joy_len = math.hypot(touch_move_x, touch_move_y)
+            if joy_len > 1.0:
+                joy_dx /= joy_len
+                joy_dy /= joy_len
+
+            dx += joy_dx
+            dy += joy_dy
+
+        # Desktop Keyboard Movement
         keys = pg.key.get_pressed()
         kb_dx, kb_dy = 0.0, 0.0
         sin_a = math.sin(self.angle)
         cos_a = math.cos(self.angle)
 
+        fwd_move = 0
+        side_move = 0
         if keys[pg.K_w] or keys[pg.K_UP]:
-            kb_dx += cos_a * base_speed
-            kb_dy += sin_a * base_speed
+            fwd_move += 1
         if keys[pg.K_s] or keys[pg.K_DOWN]:
-            kb_dx -= cos_a * base_speed
-            kb_dy -= sin_a * base_speed
+            fwd_move -= 1
         if keys[pg.K_a]:
-            kb_dx += sin_a * base_speed
-            kb_dy -= cos_a * base_speed
+            side_move -= 1
         if keys[pg.K_d]:
-            kb_dx -= sin_a * base_speed
-            kb_dy += cos_a * base_speed
+            side_move += 1
 
-        if kb_dx != 0.0 or kb_dy != 0.0:
+        if fwd_move != 0 or side_move != 0:
             self.is_moving = True
+            move_scale = base_speed
+            # Normalize diagonal speed (W+A, W+D, S+A, S+D)
+            if fwd_move != 0 and side_move != 0:
+                move_scale *= (1.0 / math.sqrt(2.0))
+
+            kb_dx += (fwd_move * cos_a - side_move * sin_a) * move_scale
+            kb_dy += (fwd_move * sin_a + side_move * cos_a) * move_scale
             dx += kb_dx
             dy += kb_dy
 
-        # Check collision with walls (sliding physics with corner buffer protection)
-        buffer = 0.28
-        check_x = self.x + (buffer if dx > 0 else -buffer) + dx
-        check_y = self.y + (buffer if dy > 0 else -buffer) + dy
+        # Apply smooth independent-axis sliding collision
+        self.check_wall_collision(dx, dy)
 
-        # Verify X movement without corner clipping
-        if (not self.game.level_map.is_wall(check_x, self.y - buffer) and
-                not self.game.level_map.is_wall(check_x, self.y + buffer)):
-            self.x += dx
-
-        # Verify Y movement without corner clipping
-        if (not self.game.level_map.is_wall(self.x - buffer, check_y) and
-                not self.game.level_map.is_wall(self.x + buffer, check_y)):
-            self.y += dy
-
-        # Rotation from Touch Panning or Mouse or Keyboard Arrows
+        # Smooth Rotation from Touch, Keyboard, or Mouse
         rot_delta = 0.0
         if touch_look != 0.0:
             rot_delta += touch_look * TOUCH_LOOK_SENSITIVITY
@@ -186,15 +205,16 @@ class Player:
         if keys[pg.K_RIGHT]:
             rot_delta += PLAYER_ROT_SPEED * dt
 
-        # Desktop mouse relative with edge recentering and delta clamping
+        # Smooth Desktop Mouse Look
         if self.game.mouse_look_enabled:
             mx, my = pg.mouse.get_pos()
-            if mx < 100 or mx > WIDTH - 100 or my < 100 or my > HEIGHT - 100:
+            if mx < 80 or mx > WIDTH - 80 or my < 80 or my > HEIGHT - 80:
                 pg.mouse.set_pos([HALF_WIDTH, HALF_HEIGHT])
-                pg.mouse.get_rel()  # discard recenter delta
-            mouse_rel = pg.mouse.get_rel()[0]
-            mouse_rel = max(-100, min(100, mouse_rel))
-            rot_delta += mouse_rel * MOUSE_SENSITIVITY
+                pg.mouse.get_rel()  # flush center jump
+            else:
+                m_rel = pg.mouse.get_rel()[0]
+                m_rel = max(-35, min(35, m_rel))
+                rot_delta += m_rel * 0.0018
 
         self.rel = rot_delta
         self.angle = (self.angle + rot_delta) % math.tau
