@@ -78,7 +78,7 @@ def main():
     print("  STEP 2: Installing Buildozer & Cython")
     print("=" * 70)
     run_command(
-        "pip install --upgrade Cython==0.29.36 buildozer python-for-android",
+        "pip install --upgrade 'Cython<3.0' buildozer git+https://github.com/kivy/python-for-android.git@develop",
         "Installing Python packaging packages"
     )
 
