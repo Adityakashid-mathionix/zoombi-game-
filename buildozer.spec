@@ -26,7 +26,7 @@ version = 1.0.0
 
 # (list) Application requirements
 # comma separated e.g. requirements = sqlite3,kivy
-requirements = python3,pygame-ce,pillow,requests,urllib3
+requirements = python3,hostpython3,sdl2,pygame-ce,pillow,requests,urllib3
 
 # (str) Presplash of the application
 # presplash.filename = %(source.dir)s/assets/ui/presplash.png
@@ -69,13 +69,13 @@ android.minapi = 24
 android.private_storage = True
 
 # (list) The Android archs to build for, choices: armeabi-v7a, arm64-v8a, x86, x86_64
-android.archs = arm64-v8a, armeabi-v7a
+android.archs = arm64-v8a
 
 # (bool) enables Android auto backup feature (Android API >=23)
 android.allow_backup = True
 
 # (str) python-for-android branch to use, defaults to master
-p4a.branch = master
+p4a.branch = develop
 
 # (str) Bootstrap to use for android
 p4a.bootstrap = sdl2

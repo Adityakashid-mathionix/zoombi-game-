@@ -30,12 +30,13 @@ jobs:
           sudo apt install -y -qq \
             git zip unzip openjdk-17-jdk python3-pip autoconf libtool pkg-config \
             zlib1g-dev libncurses5-dev libncursesw5-dev libtinfo6 cmake libffi-dev \
-            libssl-dev build-essential ccache
+            libssl-dev build-essential ccache libsdl2-dev libsdl2-image-dev \
+            libsdl2-mixer-dev libsdl2-ttf-dev libportmidi-dev
 
       - name: Install Buildozer & Dependencies
         run: |
           pip install --upgrade pip
-          pip install --upgrade cython==0.29.36 buildozer python-for-android
+          pip install --upgrade "cython<3.0" buildozer git+https://github.com/kivy/python-for-android.git@develop
 
       - name: Build APK with Buildozer
         run: |
