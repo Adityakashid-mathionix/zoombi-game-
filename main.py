@@ -87,14 +87,18 @@ class Game:
 
         self.elapsed_time = 0.0
         self.state = "GAMEPLAY"
-        self.mouse_look_enabled = False
-        pg.mouse.set_visible(True)
+        self.mouse_look_enabled = True
+        pg.mouse.set_visible(False)
+        pg.event.set_grab(True)
+        pg.mouse.set_pos([HALF_WIDTH, HALF_HEIGHT])
+        pg.mouse.get_rel()  # flush residual delta
 
     def trigger_level_victory(self):
         """Called upon reaching extraction with survivor rescued."""
         self.state = "VICTORY"
         self.mouse_look_enabled = False
         pg.mouse.set_visible(True)
+        pg.event.set_grab(False)
         self.debriefing_modal.reset()
         lvl_id = self.level_map.level_id
         meta = self.level_map.meta
@@ -116,12 +120,15 @@ class Game:
         self.state = "GAME_OVER"
         self.mouse_look_enabled = False
         pg.mouse.set_visible(True)
+        pg.event.set_grab(False)
         self.game_over_modal.reset()
 
     def return_to_lobby(self):
         self.state = "LOBBY"
         self.mouse_look_enabled = False
         pg.mouse.set_visible(True)
+        pg.event.set_grab(False)
+        pg.display.set_caption("Zombi Apploclips")
 
     def handle_events(self):
         for event in pg.event.get():
@@ -144,6 +151,7 @@ class Game:
                 if event.key in (pg.K_m, pg.K_TAB) and self.state == "GAMEPLAY":
                     self.mouse_look_enabled = not self.mouse_look_enabled
                     pg.mouse.set_visible(not self.mouse_look_enabled)
+                    pg.event.set_grab(self.mouse_look_enabled)
                     if self.mouse_look_enabled:
                         pg.mouse.set_pos([HALF_WIDTH, HALF_HEIGHT])
                         pg.mouse.get_rel()  # flush residual delta
@@ -177,9 +185,15 @@ class Game:
                     if event.key in (pg.K_RETURN, pg.K_SPACE, pg.K_r):
                         self.game_over_modal.handle_click(WIDTH // 2 - 120, HEIGHT // 2 + 65)
 
-            # Mouse / touch desktop firing
+            # Mouse click in gameplay: re-captures mouse or fires weapon
             if event.type == pg.MOUSEBUTTONDOWN and self.state == "GAMEPLAY":
-                if event.button == 1 and self.mouse_look_enabled:
+                if not self.mouse_look_enabled:
+                    self.mouse_look_enabled = True
+                    pg.mouse.set_visible(False)
+                    pg.event.set_grab(True)
+                    pg.mouse.set_pos([HALF_WIDTH, HALF_HEIGHT])
+                    pg.mouse.get_rel()
+                elif event.button == 1:
                     self.weapon_manager.shoot()
 
             # State-specific event handling
@@ -259,7 +273,10 @@ class Game:
             self.handle_events()
             self.update()
             self.draw()
-            self.delta_time = self.clock.tick(FPS)
+            raw_dt = self.clock.tick(FPS)
+            self.delta_time = min(50.0, max(1.0, float(raw_dt)))
+            if self.state == "GAMEPLAY":
+                pg.display.set_caption(f"Zombi Apploclips - FPS: {self.clock.get_fps():.1f}")
 
 
 if __name__ == "__main__":

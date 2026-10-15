@@ -5,8 +5,9 @@ keyboard/mouse & virtual touch joystick movement, interactions, and objectives.
 import math
 import pygame as pg
 from engine.settings import (
-    WIDTH, HEIGHT, PLAYER_POS, PLAYER_ANGLE, PLAYER_SPEED, PLAYER_ROT_SPEED,
-    PLAYER_MAX_HEALTH, PLAYER_MAX_ARMOR, MOUSE_SENSITIVITY,
+    WIDTH, HEIGHT, PLAYER_POS, PLAYER_ANGLE, PLAYER_SPEED, PLAYER_RUN_SPEED,
+    PLAYER_ROT_SPEED, PLAYER_SIZE_SCALE, PLAYER_MAX_HEALTH, PLAYER_MAX_ARMOR,
+    MOUSE_SENSITIVITY, MOUSE_MAX_REL, MOUSE_BORDER_LEFT, MOUSE_BORDER_RIGHT,
     TOUCH_LOOK_SENSITIVITY, HALF_WIDTH, HALF_HEIGHT
 )
 
@@ -24,7 +25,9 @@ class Player:
         self.rel = 0.0
         self.bob_timer = 0
         self.is_moving = False
+        self.is_running = False
         self.is_dead = False
+        self.diag_move_corr = 1 / math.sqrt(2)
 
         # Adrenaline boost state
         self.adrenaline_active = False
@@ -122,82 +125,99 @@ class Player:
         return not self.game.level_map.is_wall(x, y)
 
     def check_wall_collision(self, dx, dy):
-        """Authentic DOOM wall sliding physics: tests X and Y movement axes independently."""
-        radius = 0.22  # Player collision radius in world grid units
+        """Exact Reference DOOM wall sliding physics: tests independent X and Y movement axes."""
+        dt = max(1.0, self.game.delta_time)
+        scale = PLAYER_SIZE_SCALE / dt
+        if self.check_wall(int(self.x + dx * scale), int(self.y)):
+            self.x += dx
+        if self.check_wall(int(self.x), int(self.y + dy * scale)):
+            self.y += dy
 
-        # Test and apply X movement
-        if dx != 0.0:
-            check_x = self.x + dx + (radius if dx > 0 else -radius)
-            if self.check_wall(check_x, self.y):
-                self.x += dx
-
-        # Test and apply Y movement
-        if dy != 0.0:
-            check_y = self.y + dy + (radius if dy > 0 else -radius)
-            if self.check_wall(self.x, check_y):
-                self.y += dy
+    def mouse_control(self):
+        """Exact Reference DOOM smooth mouse look controller."""
+        if not self.game.mouse_look_enabled:
+            return 0.0
+        mx, my = pg.mouse.get_pos()
+        if mx < MOUSE_BORDER_LEFT or mx > MOUSE_BORDER_RIGHT:
+            pg.mouse.set_pos([HALF_WIDTH, HALF_HEIGHT])
+        self.rel = pg.mouse.get_rel()[0]
+        self.rel = max(-MOUSE_MAX_REL, min(MOUSE_MAX_REL, self.rel))
+        return self.rel * MOUSE_SENSITIVITY * max(1.0, self.game.delta_time)
 
     def update_movement(self, dt, touch_move_x=0.0, touch_move_y=0.0, touch_look=0.0):
-        # Calculate speed with adrenaline multiplier
-        base_speed = PLAYER_SPEED * (1.45 if self.adrenaline_active else 1.0) * dt
+        keys = pg.key.get_pressed()
+        self.is_running = bool(keys[pg.K_LSHIFT] or keys[pg.K_RSHIFT])
+
+        # Base speed selection: walk vs sprint
+        speed_rate = PLAYER_RUN_SPEED if self.is_running else PLAYER_SPEED
+        if self.adrenaline_active:
+            speed_rate *= 1.45
+
+        base_speed = speed_rate * dt
         dx, dy = 0.0, 0.0
         self.is_moving = False
 
-        # Touch Virtual Joystick Input
-        if abs(touch_move_x) > 0.05 or abs(touch_move_y) > 0.05:
-            self.is_moving = True
-            sin_a = math.sin(self.angle)
-            cos_a = math.cos(self.angle)
-
-            fwd = -touch_move_y * base_speed
-            strafe = touch_move_x * base_speed
-
-            joy_dx = fwd * cos_a - strafe * sin_a
-            joy_dy = fwd * sin_a + strafe * cos_a
-
-            # Diagonal normalization for joystick
-            joy_len = math.hypot(touch_move_x, touch_move_y)
-            if joy_len > 1.0:
-                joy_dx /= joy_len
-                joy_dy /= joy_len
-
-            dx += joy_dx
-            dy += joy_dy
-
-        # Desktop Keyboard Movement
-        keys = pg.key.get_pressed()
-        kb_dx, kb_dy = 0.0, 0.0
         sin_a = math.sin(self.angle)
         cos_a = math.cos(self.angle)
 
-        fwd_move = 0
-        side_move = 0
+        # 1. Desktop Keyboard Movement (Reference DOOM logic with diagonal correction)
+        kb_dx, kb_dy = 0.0, 0.0
+        num_key_pressed = -1
+        speed_sin = base_speed * sin_a
+        speed_cos = base_speed * cos_a
+
         if keys[pg.K_w] or keys[pg.K_UP]:
-            fwd_move += 1
+            num_key_pressed += 1
+            kb_dx += speed_cos
+            kb_dy += speed_sin
         if keys[pg.K_s] or keys[pg.K_DOWN]:
-            fwd_move -= 1
+            num_key_pressed += 1
+            kb_dx -= speed_cos
+            kb_dy -= speed_sin
         if keys[pg.K_a]:
-            side_move -= 1
+            num_key_pressed += 1
+            kb_dx += speed_sin
+            kb_dy -= speed_cos
         if keys[pg.K_d]:
-            side_move += 1
+            num_key_pressed += 1
+            kb_dx -= speed_sin
+            kb_dy += speed_cos
 
-        if fwd_move != 0 or side_move != 0:
+        if num_key_pressed >= 0:
             self.is_moving = True
-            move_scale = base_speed
-            # Normalize diagonal speed (W+A, W+D, S+A, S+D)
-            if fwd_move != 0 and side_move != 0:
-                move_scale *= (1.0 / math.sqrt(2.0))
-
-            kb_dx += (fwd_move * cos_a - side_move * sin_a) * move_scale
-            kb_dy += (fwd_move * sin_a + side_move * cos_a) * move_scale
+            if num_key_pressed > 0:
+                kb_dx *= self.diag_move_corr
+                kb_dy *= self.diag_move_corr
             dx += kb_dx
             dy += kb_dy
+
+        # 2. Touch Virtual Joystick Input
+        joy_len = math.hypot(touch_move_x, touch_move_y)
+        if joy_len > 0.05:
+            self.is_moving = True
+            # Outer rim auto-run
+            if joy_len > 0.70:
+                self.is_running = True
+                joy_speed = (PLAYER_RUN_SPEED * (1.45 if self.adrenaline_active else 1.0)) * dt
+            else:
+                joy_speed = base_speed
+
+            norm_x = touch_move_x / joy_len if joy_len > 1.0 else touch_move_x
+            norm_y = touch_move_y / joy_len if joy_len > 1.0 else touch_move_y
+
+            fwd = -norm_y * joy_speed
+            strafe = norm_x * joy_speed
+
+            joy_dx = fwd * cos_a - strafe * sin_a
+            joy_dy = fwd * sin_a + strafe * cos_a
+            dx += joy_dx
+            dy += joy_dy
 
         # Apply smooth independent-axis sliding collision
         self.check_wall_collision(dx, dy)
 
         # Smooth Rotation from Touch, Keyboard, or Mouse
-        rot_delta = 0.0
+        rot_delta = self.mouse_control()
         if touch_look != 0.0:
             rot_delta += touch_look * TOUCH_LOOK_SENSITIVITY
         if keys[pg.K_LEFT]:
@@ -205,23 +225,12 @@ class Player:
         if keys[pg.K_RIGHT]:
             rot_delta += PLAYER_ROT_SPEED * dt
 
-        # Smooth Desktop Mouse Look
-        if self.game.mouse_look_enabled:
-            mx, my = pg.mouse.get_pos()
-            if mx < 80 or mx > WIDTH - 80 or my < 80 or my > HEIGHT - 80:
-                pg.mouse.set_pos([HALF_WIDTH, HALF_HEIGHT])
-                pg.mouse.get_rel()  # flush center jump
-            else:
-                m_rel = pg.mouse.get_rel()[0]
-                m_rel = max(-35, min(35, m_rel))
-                rot_delta += m_rel * 0.0018
-
         self.rel = rot_delta
         self.angle = (self.angle + rot_delta) % math.tau
 
         # Weapon bobbing
         if self.is_moving:
-            self.bob_timer += dt
+            self.bob_timer += dt * (1.5 if self.is_running else 1.0)
 
         # Adrenaline timer
         if self.adrenaline_active:
@@ -234,3 +243,7 @@ class Player:
     @property
     def pos(self):
         return self.x, self.y
+
+    @property
+    def map_pos(self):
+        return int(self.x), int(self.y)

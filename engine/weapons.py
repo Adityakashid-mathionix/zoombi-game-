@@ -105,10 +105,12 @@ class WeaponManager:
         self.last_shot_time = 0
         self.reload_start_time = 0
         self.anim_frame = 0
-        self.anim_timer = 0
-
         # Active grenades in the level
         self.active_grenades = []
+
+        # Smooth viewmodel bobbing interpolation
+        self.bob_offset_x = 0.0
+        self.bob_offset_y = 0.0
 
     @property
     def current_config(self):
@@ -293,7 +295,7 @@ class WeaponManager:
                 self.active_grenades.remove(g)
 
     def draw_viewmodel(self, screen):
-        """Draws first-person weapon viewmodel centered at the bottom of the screen."""
+        """Draws first-person weapon viewmodel centered at the bottom of the screen with smooth sway."""
         frames = self.game.asset_manager.weapon_sprites.get(self.current_weapon_key, [])
         if not frames:
             return
@@ -301,13 +303,22 @@ class WeaponManager:
         frame_idx = min(self.anim_frame, len(frames) - 1)
         frame_surf = frames[frame_idx]
 
-        # Apply slight bobbing when player is moving
-        bob_x = math.sin(self.game.player.bob_timer * 0.008) * 8 if self.game.player.is_moving else 0
-        bob_y = abs(math.cos(self.game.player.bob_timer * 0.008)) * 10 if self.game.player.is_moving else 0
+        # Calculate subtle, natural sway target
+        if self.game.player.is_moving:
+            amp = 7 if getattr(self.game.player, "is_running", False) else 5
+            target_bob_x = math.sin(self.game.player.bob_timer * 0.005) * amp
+            target_bob_y = abs(math.cos(self.game.player.bob_timer * 0.005)) * amp
+        else:
+            target_bob_x = 0.0
+            target_bob_y = 0.0
+
+        # Smooth exponential decay eliminates abrupt pops and snapping
+        self.bob_offset_x += (target_bob_x - self.bob_offset_x) * 0.2
+        self.bob_offset_y += (target_bob_y - self.bob_offset_y) * 0.2
 
         # Center weapon at bottom screen
-        pos_x = HALF_WIDTH - frame_surf.get_width() // 2 + int(bob_x)
-        pos_y = HEIGHT - frame_surf.get_height() + int(bob_y)
+        pos_x = HALF_WIDTH - frame_surf.get_width() // 2 + int(self.bob_offset_x)
+        pos_y = HEIGHT - frame_surf.get_height() + int(self.bob_offset_y)
 
         # Draw reload lower offset
         if self.is_reloading:

@@ -7,7 +7,7 @@ import math
 RES = WIDTH, HEIGHT = 1280, 720
 HALF_WIDTH = WIDTH // 2
 HALF_HEIGHT = HEIGHT // 2
-FPS = 60
+FPS = 0  # Uncapped buttery-smooth frame pacing like reference DOOM
 
 # Raycasting Engine Parameters
 FOV = math.pi / 3  # 60 degrees Field of View
@@ -21,18 +21,22 @@ SCALE = WIDTH // NUM_RAYS
 TEXTURE_SIZE = 256
 HALF_TEXTURE_SIZE = TEXTURE_SIZE // 2
 
-# Player Movement & Controls
+# Player Movement & Controls (Synchronized with Reference DOOM Physics)
 PLAYER_POS = (2.5, 2.5)
 PLAYER_ANGLE = 0.0
-PLAYER_SPEED = 0.0035  # Units per millisecond
-PLAYER_ROT_SPEED = 0.0024  # Radians per millisecond
-PLAYER_SIZE_SCALE = 60
+PLAYER_SPEED = 0.004  # Units per millisecond (exact reference DOOM speed)
+PLAYER_RUN_SPEED = 0.0065  # Sprint speed when holding Shift or pushing virtual joystick
+PLAYER_ROT_SPEED = 0.002  # Radians per millisecond (exact reference DOOM rot speed)
+PLAYER_SIZE_SCALE = 60  # Wall collision projection scale
 PLAYER_MAX_HEALTH = 100
 PLAYER_MAX_ARMOR = 100
 
-# Touch & Mouse Controls Sensitivity
+# Touch & Mouse Controls Sensitivity (Exact Reference DOOM Parameters)
 TOUCH_LOOK_SENSITIVITY = 0.0032
-MOUSE_SENSITIVITY = 0.0025
+MOUSE_SENSITIVITY = 0.0003  # Scaled by delta_time
+MOUSE_MAX_REL = 40
+MOUSE_BORDER_LEFT = 100
+MOUSE_BORDER_RIGHT = WIDTH - MOUSE_BORDER_LEFT
 JOYSTICK_RADIUS = 75
 JOYSTICK_DEADZONE = 12
 BUTTON_RADIUS = 36

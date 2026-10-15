@@ -13,15 +13,15 @@
     7,
     8
   ],
-  "currency": 20000,
+  "currency": 24500,
   "loadout": {
     "primary_weapon": "pistol",
     "tactical_item": "grenade"
   },
   "stats": {
     "total_kills": 0,
-    "survivors_rescued": 78,
-    "missions_completed": 78,
+    "survivors_rescued": 96,
+    "missions_completed": 96,
     "best_times": {}
   }
 }
