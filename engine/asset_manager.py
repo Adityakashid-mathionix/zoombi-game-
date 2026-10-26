@@ -712,10 +712,15 @@ class AssetManager:
             "keycard_gold": self.load_texture(os.path.join(p_dir, "keycard_gold.png"), (128, 128)),
         }
 
+        # Prison bars obstacle cage
+        bars_path = "assets/sprites/props/prison_bars.png"
+        self.prison_bars_texture = self.load_texture(bars_path, (256, 256)) if os.path.exists(bars_path) else None
+
         # Load Zombie sprite frames
         z_base = "assets/sprites/zombies"
-        for z_name in ("walker", "runner", "spitter", "brute"):
+        for z_name in ("walker", "runner", "spitter", "brute", "king"):
             self.zombie_sprites[z_name] = {}
+            res = (384, 384) if z_name == "king" else (256, 256)
             for state in ("idle", "walk", "attack", "death"):
                 state_dir = os.path.join(z_base, z_name, state)
                 frames = []
@@ -723,7 +728,7 @@ class AssetManager:
                     file_names = sorted(os.listdir(state_dir))
                     for fname in file_names:
                         if fname.endswith(".png"):
-                            frames.append(self.load_texture(os.path.join(state_dir, fname), (256, 256)))
+                            frames.append(self.load_texture(os.path.join(state_dir, fname), res))
                 self.zombie_sprites[z_name][state] = frames if frames else [self.create_fallback_sprite((180, 40, 40))]
 
         # Load Survivor sprites
@@ -749,19 +754,21 @@ class AssetManager:
 
         # Load Weapon Viewmodels (Scale large shotgun frames to 40% to fit screen cleanly)
         w_base = "assets/sprites/weapons"
+        self.weapon_reload_sprites = {}
         for w_name in ("pistol", "shotgun", "rifle"):
             w_dir = os.path.join(w_base, w_name)
             frames = []
+            reload_frames = []
             if os.path.exists(w_dir):
                 for fname in sorted(os.listdir(w_dir)):
-                    if fname.endswith(".png"):
+                    if fname.startswith("reload_") and fname.endswith(".png"):
                         img = pg.image.load(os.path.join(w_dir, fname)).convert_alpha()
-                        if w_name == "shotgun":
-                            sw = int(img.get_width() * 0.40)
-                            sh = int(img.get_height() * 0.40)
-                            img = pg.transform.smoothscale(img, (sw, sh))
+                        reload_frames.append(img)
+                    elif fname.endswith(".png"):
+                        img = pg.image.load(os.path.join(w_dir, fname)).convert_alpha()
                         frames.append(img)
             self.weapon_sprites[w_name] = frames
+            self.weapon_reload_sprites[w_name] = reload_frames
 
     def create_fallback_sprite(self, color):
         surf = pg.Surface((256, 256), pg.SRCALPHA)

@@ -227,6 +227,14 @@ class Game:
             # Update Weapon Manager
             self.weapon_manager.update(dt)
 
+            # Continuous burst fire handling for Assault Rifle while fire input is held
+            if self.weapon_manager.current_weapon_key == "rifle":
+                mouse_firing = self.mouse_look_enabled and pg.mouse.get_pressed()[0]
+                key_firing = pg.key.get_pressed()[pg.K_SPACE]
+                touch_firing = self.touch_controls.is_shoot_held()
+                if mouse_firing or key_firing or touch_firing:
+                    self.weapon_manager.shoot()
+
             # Update Sprites and Entities
             self.sprite_manager.update(dt)
 

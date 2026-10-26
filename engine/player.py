@@ -70,16 +70,17 @@ class Player:
 
     def check_interactions(self):
         """Check proximity to doors, survivor, or extraction zone."""
-        # 1. Check nearby doors
-        px, py = int(self.x), int(self.y)
+        # 1. Check nearby doors with smooth distance check (within 1.7 tiles of door center)
         self.near_door = None
-        for dx, dy in [(-1, 0), (1, 0), (0, -1), (0, 1)]:
-            check_tile = (px + dx, py + dy)
-            if check_tile in self.game.level_map.door_positions:
-                door_data = self.game.level_map.door_positions[check_tile]
-                if not door_data["open"]:
-                    self.near_door = (check_tile, door_data["required_keycard"])
-                    break
+        closest_door_dist = 999.0
+        for door_tile, door_data in self.game.level_map.door_positions.items():
+            if not door_data["open"]:
+                door_cx = door_tile[0] + 0.5
+                door_cy = door_tile[1] + 0.5
+                dist_door = math.hypot(self.x - door_cx, self.y - door_cy)
+                if dist_door < 1.75 and dist_door < closest_door_dist:
+                    closest_door_dist = dist_door
+                    self.near_door = (door_tile, door_data["required_keycard"])
 
         # 2. Check nearby extraction zone
         ext_x, ext_y = self.game.level_map.extraction_pos
@@ -91,24 +92,27 @@ class Player:
             self.game.trigger_level_victory()
 
     def interact(self):
-        """Contextual interaction: rescue survivor or unlock security door."""
-        # Rescue survivor
-        if self.near_survivor and not self.near_survivor.rescued:
-            self.near_survivor.rescue()
-            return True
-
-        # Unlock door
+        """Contextual interaction: unlock security door, rescue survivor, or extract."""
+        # Priority 1: Unlock door if standing near one
         if self.near_door:
             tile_pos, req_card = self.near_door
             if req_card in self.game.weapon_manager.inventory["keycards"]:
                 self.game.level_map.unlock_door(tile_pos)
                 self.game.sound_manager.play_door_unlock()
-                self.game.hud.show_message("SECURITY ACCESS GRANTED - DOOR UNLOCKED", (40, 220, 80))
+                self.game.hud.show_message("SECURITY DOOR UNLOCKED - PRISON BARS DISAPPEARED!", (40, 220, 80))
                 self.near_door = None
                 return True
             else:
                 self.game.hud.show_message(f"ACCESS DENIED! REQUIRES {req_card.upper()} KEYCARD", (240, 40, 40))
                 return False
+
+        # Priority 2: Rescue survivor
+        if self.near_survivor and not self.near_survivor.rescued:
+            if hasattr(self.game.level_map, "is_door_open") and not self.game.level_map.is_door_open():
+                self.game.hud.show_message("PRISON BARS LOCKED! UNLOCK THE SECURITY DOOR FIRST!", (240, 50, 50))
+                return False
+            self.near_survivor.rescue()
+            return True
 
         # Extraction portal
         if self.near_extraction:
@@ -124,14 +128,51 @@ class Player:
         """Returns True if world position (x, y) is passable and not a wall or closed door."""
         return not self.game.level_map.is_wall(x, y)
 
+    def is_valid_pos(self, x, y, r=0.20):
+        """Check if circular hitbox of radius r at (x, y) is free of solid walls or closed doors."""
+        for ox, oy in (
+            (-r, 0), (r, 0), (0, -r), (0, r),
+            (-r * 0.707, -r * 0.707), (r * 0.707, -r * 0.707),
+            (-r * 0.707, r * 0.707), (r * 0.707, r * 0.707)
+        ):
+            if self.game.level_map.is_wall(x + ox, y + oy):
+                return False
+        return True
+
     def check_wall_collision(self, dx, dy):
-        """Exact Reference DOOM wall sliding physics: tests independent X and Y movement axes."""
-        dt = max(1.0, self.game.delta_time)
-        scale = PLAYER_SIZE_SCALE / dt
-        if self.check_wall(int(self.x + dx * scale), int(self.y)):
+        """Ultra-smooth wall sliding collision physics with corner glide and anti-snagging."""
+        r = 0.20
+
+        # 1. Try full combined step first
+        if self.is_valid_pos(self.x + dx, self.y + dy, r):
             self.x += dx
-        if self.check_wall(int(self.x), int(self.y + dy * scale)):
             self.y += dy
+            return
+
+        # 2. Independent axis sliding:
+        # Move along X if unobstructed
+        if self.is_valid_pos(self.x + dx, self.y, r):
+            self.x += dx
+        elif self.is_valid_pos(self.x + dx * 0.5, self.y, r * 0.85):
+            self.x += dx * 0.5
+
+        # Move along Y if unobstructed
+        if self.is_valid_pos(self.x, self.y + dy, r):
+            self.y += dy
+        elif self.is_valid_pos(self.x, self.y + dy * 0.5, r * 0.85):
+            self.y += dy * 0.5
+
+        # 3. Anti-stuck safeguard: if player is ever overlapping a wall, gently push out toward free space
+        if self.game.level_map.is_wall(self.x, self.y):
+            tile_cx = int(self.x) + 0.5
+            tile_cy = int(self.y) + 0.5
+            for nx, ny in [(0, 1), (0, -1), (1, 0), (-1, 0)]:
+                cand_x = tile_cx + nx
+                cand_y = tile_cy + ny
+                if not self.game.level_map.is_wall(cand_x, cand_y):
+                    self.x += nx * 0.08
+                    self.y += ny * 0.08
+                    break
 
     def mouse_control(self):
         """Exact Reference DOOM smooth mouse look controller."""

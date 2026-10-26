@@ -367,9 +367,9 @@ class LobbyMenu:
 
         # 1. Primary Weapons
         w_options = [
-            ("shotgun", "Combat 12G Shotgun", "High spread buckshot burst, ideal for tight infected corridors.", (255, 200, 40)),
-            ("rifle", "M4A1 Assault Rifle", "Rapid automatic fire with 30-round magazine for swarm crowd control.", (0, 210, 255)),
-            ("pistol", "Tactical 9mm Pistol", "Precision sidearm with high mobility and ammo efficiency.", (220, 220, 230))
+            ("shotgun", "Combat 12G Shotgun", "Lethal 2-shell close blast (Short Range, High Dmg), obliterates close infected.", (255, 200, 40)),
+            ("rifle", "M4A1 Assault Rifle", "3-round high-velocity burst (Long Range, Med Dmg) for precision swarm defense.", (0, 210, 255)),
+            ("pistol", "Tactical 9mm Pistol", "Agile sidearm (Medium Range, Low Dmg) with generous ammo reserves.", (220, 220, 230))
         ]
         for i, (w_key, w_name, w_desc, w_col) in enumerate(w_options):
             r = pg.Rect(80 + i * 360, 160, 320, 170)
@@ -385,7 +385,7 @@ class LobbyMenu:
             self.screen.blit(w_title, (r.x + 16, r.y + 38))
 
             cfg = WEAPON_CONFIGS[w_key]
-            stats = f"Damage: {cfg['damage']} | Clip: {cfg['max_ammo']} | Pellets: {cfg['pellets']}"
+            stats = f"Dmg: {cfg.get('damage_label', cfg['damage'])} | Range: {cfg.get('range_label', 'Med')} | Clip: {cfg['max_ammo']}"
             st_surf = self.font_small.render(stats, True, COLOR_AMBER)
             self.screen.blit(st_surf, (r.x + 16, r.y + 70))
 
@@ -484,7 +484,7 @@ class LobbyMenu:
             (3, "PATHFINDER STAR", "Sergeant Ramos (Military Scout)", "Recovered city center barricade radar."),
             (4, "ANTIDOTE HARVESTER", "Dr. Elena Rostova (Virologist)", "Protected mutated pathogen samples."),
             (5, "APOCALYPSE SAVIOR", "Dr. Arthur Sterling (Head Scientist)", "Extracted master vaccine dispersal data."),
-            (6, "FLORA SHIELD", "Dr. Maya Lin (Botanist Specialist)", "Secured botanical cellular inhibitor."),
+            (6, "FLORA SHIELD", "Papu (VIP Survivor Specialist)", "Secured botanical cellular inhibitor."),
             (7, "DEMOLITION CLEAVER", "Chief Alvarez (Demolitions Expert)", "Armed detonator to seal hive caverns."),
             (8, "TOTAL AIRLIFT MEDAL", "Major Katherine Ross (Air Commander)", "Cleared runway for extraction transports."),
         ]

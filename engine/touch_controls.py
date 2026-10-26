@@ -174,10 +174,10 @@ class TouchControlsManager:
                 self.game.player.near_door is not None or
                 self.game.player.near_extraction
             )
-            if self.game.player.near_survivor:
-                interact_btn.label = "RESCUE"
-            elif self.game.player.near_door:
+            if self.game.player.near_door:
                 interact_btn.label = "UNLOCK"
+            elif self.game.player.near_survivor:
+                interact_btn.label = "RESCUE"
             elif self.game.player.near_extraction:
                 interact_btn.label = "EVAC"
             else:
@@ -262,6 +262,12 @@ class TouchControlsManager:
             self.game.weapon_manager.throw_grenade()
         elif action_id == "medkit":
             self.game.weapon_manager.use_medkit()
+
+    def is_shoot_held(self):
+        for btn in self.buttons:
+            if btn.action_id == "shoot":
+                return btn.is_pressed
+        return False
 
     def get_movement_input(self):
         return self.joystick.move_vector

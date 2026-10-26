@@ -58,6 +58,8 @@ class InGameHUD:
 
     def draw(self, screen):
         self.draw_top_bar(screen)
+        self.draw_boss_health_bar(screen)
+        self.draw_respawn_countdown(screen)
         self.draw_vitals(screen)
         self.draw_ammo_and_tactical(screen)
         self.draw_minimap(screen)
@@ -119,9 +121,95 @@ class InGameHUD:
         secs = elapsed_sec % 60
         alive_zombies = sum(1 for z in self.game.sprite_manager.zombies if z.alive)
         
-        stat_text = f"INFECTED: {alive_zombies} | TIME: {mins:02d}:{secs:02d}"
-        stat_surf = self.font_hud.render(stat_text, True, (245, 230, 210))
+        sm = getattr(self.game, "sprite_manager", None)
+        if sm and getattr(sm, "respawn_active", False) and sm.respawn_timer > 0:
+            cd = max(1, int(math.ceil(sm.respawn_timer)))
+            blink = (pg.time.get_ticks() // 280) % 2
+            col = (255, 60, 60) if blink else (255, 190, 40)
+            stat_text = f"RESPAWN: {cd:02d}s | TIME: {mins:02d}:{secs:02d}"
+            stat_surf = self.font_hud.render(stat_text, True, col)
+        else:
+            stat_text = f"INFECTED: {alive_zombies} | TIME: {mins:02d}:{secs:02d}"
+            stat_surf = self.font_hud.render(stat_text, True, (245, 230, 210))
         screen.blit(stat_surf, (WIDTH - 275, 14))
+
+    def draw_respawn_countdown(self, screen):
+        """Displays prominent visual timer and progress bar when horde is on 60-second respawn cooldown."""
+        sm = getattr(self.game, "sprite_manager", None)
+        if not sm or not getattr(sm, "respawn_active", False) or sm.respawn_timer <= 0:
+            return
+
+        cd = max(1, int(math.ceil(sm.respawn_timer)))
+        has_boss = any(z.zombie_type == "king" for z in sm.zombies)
+        bar_w = 480
+        bar_h = 32
+        bar_x = (WIDTH - bar_w) // 2
+        bar_y = 104 if has_boss else 56
+
+        # Pulsing outline & industrial hazard styling
+        pulse = 0.5 + 0.5 * math.sin(pg.time.get_ticks() * 0.009)
+        border_col = (255, int(120 + 80 * pulse), 30)
+        
+        bg_surf = pg.Surface((bar_w, bar_h), pg.SRCALPHA)
+        bg_surf.fill((16, 12, 18, 220))
+        pg.draw.rect(bg_surf, border_col, (0, 0, bar_w, bar_h), 2)
+
+        # Progress bar showing countdown from 60 to 0
+        total_time = getattr(sm, "RESPAWN_DELAY_SEC", 60.0)
+        pct = max(0.0, min(1.0, sm.respawn_timer / total_time))
+        prog_w = int((bar_w - 6) * pct)
+        if prog_w > 0:
+            pg.draw.rect(bg_surf, (190, 40, 45, 140), (3, 3, prog_w, bar_h - 6))
+
+        text = f"⚠️ SECTOR CLEARED! HORDE RESPAWN IN: {cd:02d}s ⚠️"
+        txt_surf = self.font_hud.render(text, True, (255, 240, 210))
+        bg_surf.blit(txt_surf, txt_surf.get_rect(center=(bar_w // 2, bar_h // 2)))
+        screen.blit(bg_surf, (bar_x, bar_y))
+
+    def draw_boss_health_bar(self, screen):
+        """Renders cinematic boss bar when King Zombie is present in the level."""
+        king = next((z for z in self.game.sprite_manager.zombies if z.zombie_type == "king"), None)
+        if not king:
+            return
+
+        bar_w = 440
+        bar_h = 24
+        bar_x = (WIDTH - bar_w) // 2
+        bar_y = 52
+
+        bg_surf = pg.Surface((bar_w, bar_h + 20), pg.SRCALPHA)
+        bg_surf.fill((12, 15, 20, 230))
+        screen.blit(bg_surf, (bar_x, bar_y))
+
+        border_col = (255, 215, 30) if king.alive else (110, 115, 125)
+        pg.draw.rect(screen, border_col, (bar_x, bar_y, bar_w, bar_h + 20), 2)
+
+        title_text = "👑 APOCALYPSE BOSS: THE ZOMBIE KING" if king.alive else "👑 THE ZOMBIE KING [DEFEATED]"
+        title_col = (255, 225, 60) if king.alive else (160, 160, 160)
+        t_surf = self.font_tiny.render(title_text, True, title_col)
+        screen.blit(t_surf, (bar_x + 12, bar_y + 3))
+
+        if king.alive:
+            max_hp = getattr(king, "max_health", 550)
+            cur_hp = max(0, king.health)
+            pct = cur_hp / max(1, max_hp)
+
+            fill_x = bar_x + 10
+            fill_y = bar_y + 20
+            fill_w = bar_w - 20
+            fill_h = 16
+
+            pg.draw.rect(screen, (38, 12, 16), (fill_x, fill_y, fill_w, fill_h))
+            cur_w = int(fill_w * pct)
+            if cur_w > 0:
+                hp_col = (220, 35, 45) if pct > 0.3 else (255, 60, 20)
+                pg.draw.rect(screen, hp_col, (fill_x, fill_y, cur_w, fill_h))
+                pg.draw.rect(screen, (255, 150, 90), (fill_x, fill_y, cur_w, 3))
+
+            num_text = f"{cur_hp} / {max_hp} HP ({int(pct * 100)}%)"
+            num_surf = self.font_tiny.render(num_text, True, (255, 255, 255))
+            num_rect = num_surf.get_rect(center=(fill_x + fill_w // 2, fill_y + fill_h // 2))
+            screen.blit(num_surf, num_rect)
 
     def draw_vitals(self, screen):
         # Top-Left Bio-Monitor Gauge (avoiding mobile virtual joystick at bottom-left)
@@ -330,7 +418,8 @@ class InGameHUD:
                 b_w = 460
                 b_h = 32
                 b_x = HALF_WIDTH - b_w // 2
-                b_y = 56
+                has_boss = any(z.zombie_type == "king" for z in self.game.sprite_manager.zombies)
+                b_y = 152 if has_boss else 56
 
                 beacon_surf = pg.Surface((b_w, b_h), pg.SRCALPHA)
                 beacon_surf.fill((25, 18, 10, 210))
@@ -389,14 +478,18 @@ class InGameHUD:
         prompt_text = ""
         prompt_col = COLOR_WHITE
 
-        if p.near_survivor and not p.near_survivor.rescued:
-            prompt_text = "★ PRESS ACTION TO RESCUE SURVIVOR ★"
-            prompt_col = COLOR_GREEN
-        elif p.near_door:
+        if p.near_door:
             card = p.near_door[1]
             has_card = card in self.game.weapon_manager.inventory["keycards"]
-            prompt_text = f"PRESS ACTION TO UNLOCK ({card.upper()})" if has_card else f"DOOR LOCKED: REQUIRES {card.upper()} KEYCARD"
+            prompt_text = f"★ PRESS E / ACTION TO UNLOCK ({card.upper()}) ★" if has_card else f"DOOR LOCKED: REQUIRES {card.upper()} KEYCARD"
             prompt_col = COLOR_GREEN if has_card else COLOR_BLOOD
+        elif p.near_survivor and not p.near_survivor.rescued:
+            if hasattr(self.game.level_map, "is_door_open") and not self.game.level_map.is_door_open():
+                prompt_text = "PRISON BARS LOCKED! UNLOCK THE SECURITY DOOR FIRST"
+                prompt_col = COLOR_BLOOD
+            else:
+                prompt_text = "★ PRESS E / ACTION TO RESCUE SURVIVOR ★"
+                prompt_col = COLOR_GREEN
         elif p.near_extraction:
             if self.game.level_map.extraction_unlocked:
                 prompt_text = "★ EXTRACTION PAD: EVACUATE NOW! ★"
@@ -416,8 +509,10 @@ class InGameHUD:
 
     def draw_message_banner(self, screen):
         if self.message_text:
+            has_boss = any(z.zombie_type == "king" for z in self.game.sprite_manager.zombies)
+            banner_y = 114 if has_boss else 98
             m_surf = self.font_title.render(self.message_text, True, self.message_color)
-            m_rect = m_surf.get_rect(center=(WIDTH // 2, 98))
+            m_rect = m_surf.get_rect(center=(WIDTH // 2, banner_y))
             back = pg.Surface((m_rect.width + 34, m_rect.height + 14), pg.SRCALPHA)
             back.fill((12, 16, 22, 235))
             pg.draw.rect(back, self.message_color, (0, 0, m_rect.width + 34, m_rect.height + 14), 2)

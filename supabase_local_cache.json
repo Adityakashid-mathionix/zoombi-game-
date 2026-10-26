@@ -89,9 +89,33 @@
         "zombies_killed": 11
       },
       {
+        "user_id": "anon_c5bdfa01",
+        "username": "Operative_Vance",
+        "level_id": 2,
+        "clear_time_seconds": 71.8,
+        "zombies_killed": 9,
+        "timestamp": 1792854335
+      },
+      {
         "username": "ShadowSniper",
         "clear_time_seconds": 72.0,
         "zombies_killed": 9
+      },
+      {
+        "user_id": "anon_c5bdfa01",
+        "username": "Operative_Vance",
+        "level_id": 2,
+        "clear_time_seconds": 80.0,
+        "zombies_killed": 9,
+        "timestamp": 1792392998
+      },
+      {
+        "user_id": "anon_c5bdfa01",
+        "username": "Operative_Vance",
+        "level_id": 2,
+        "clear_time_seconds": 97.9,
+        "zombies_killed": 9,
+        "timestamp": 1792396330
       }
     ],
     "3": [
@@ -126,6 +150,14 @@
         "title": "Field Doctor Rescued",
         "description": "Extracted Dr. Sarah Chen from Outpost Medical Bay.",
         "unlocked_at": 1791728028
+      },
+      {
+        "user_id": "anon_c5bdfa01",
+        "level_id": 2,
+        "badge_id": "CIRCUIT_BREAKER",
+        "title": "Power Grid Restored",
+        "description": "Extracted Marcus Vance from Abandoned Subway.",
+        "unlocked_at": 1792392998
       }
     ]
   },
@@ -337,6 +369,259 @@
         "clear_time_seconds": 0.0,
         "zombies_killed": 0,
         "timestamp": 1791989624
+      }
+    },
+    {
+      "endpoint": "level_leaderboards",
+      "payload": {
+        "user_id": "anon_c5bdfa01",
+        "username": "Operative_Vance",
+        "level_id": 1,
+        "clear_time_seconds": 137.1,
+        "zombies_killed": 8,
+        "timestamp": 1792326711
+      }
+    },
+    {
+      "endpoint": "level_leaderboards",
+      "payload": {
+        "user_id": "anon_c5bdfa01",
+        "username": "Operative_Vance",
+        "level_id": 1,
+        "clear_time_seconds": 0.0,
+        "zombies_killed": 0,
+        "timestamp": 1792391347
+      }
+    },
+    {
+      "endpoint": "level_leaderboards",
+      "payload": {
+        "user_id": "anon_c5bdfa01",
+        "username": "Operative_Vance",
+        "level_id": 1,
+        "clear_time_seconds": 162.5,
+        "zombies_killed": 8,
+        "timestamp": 1792391777
+      }
+    },
+    {
+      "endpoint": "level_leaderboards",
+      "payload": {
+        "user_id": "anon_c5bdfa01",
+        "username": "Operative_Vance",
+        "level_id": 1,
+        "clear_time_seconds": 0.0,
+        "zombies_killed": 1,
+        "timestamp": 1792392645
+      }
+    },
+    {
+      "endpoint": "level_leaderboards",
+      "payload": {
+        "user_id": "anon_c5bdfa01",
+        "username": "Operative_Vance",
+        "level_id": 1,
+        "clear_time_seconds": 91.6,
+        "zombies_killed": 9,
+        "timestamp": 1792392912
+      }
+    },
+    {
+      "endpoint": "level_leaderboards",
+      "payload": {
+        "user_id": "anon_c5bdfa01",
+        "username": "Operative_Vance",
+        "level_id": 2,
+        "clear_time_seconds": 80.0,
+        "zombies_killed": 9,
+        "timestamp": 1792392998
+      }
+    },
+    {
+      "endpoint": "level_leaderboards",
+      "payload": {
+        "user_id": "anon_c5bdfa01",
+        "username": "Operative_Vance",
+        "level_id": 1,
+        "clear_time_seconds": 111.0,
+        "zombies_killed": 9,
+        "timestamp": 1792395210
+      }
+    },
+    {
+      "endpoint": "level_leaderboards",
+      "payload": {
+        "user_id": "anon_c5bdfa01",
+        "username": "Operative_Vance",
+        "level_id": 2,
+        "clear_time_seconds": 97.9,
+        "zombies_killed": 9,
+        "timestamp": 1792396330
+      }
+    },
+    {
+      "endpoint": "level_leaderboards",
+      "payload": {
+        "user_id": "anon_c5bdfa01",
+        "username": "Operative_Vance",
+        "level_id": 1,
+        "clear_time_seconds": 69.9,
+        "zombies_killed": 9,
+        "timestamp": 1792398439
+      }
+    },
+    {
+      "endpoint": "level_leaderboards",
+      "payload": {
+        "user_id": "anon_c5bdfa01",
+        "username": "Operative_Vance",
+        "level_id": 1,
+        "clear_time_seconds": 90.1,
+        "zombies_killed": 9,
+        "timestamp": 1792399663
+      }
+    },
+    {
+      "endpoint": "level_leaderboards",
+      "payload": {
+        "user_id": "anon_c5bdfa01",
+        "username": "Operative_Vance",
+        "level_id": 1,
+        "clear_time_seconds": 0.0,
+        "zombies_killed": 1,
+        "timestamp": 1792468908
+      }
+    },
+    {
+      "endpoint": "level_leaderboards",
+      "payload": {
+        "user_id": "anon_c5bdfa01",
+        "username": "Operative_Vance",
+        "level_id": 1,
+        "clear_time_seconds": 0.0,
+        "zombies_killed": 1,
+        "timestamp": 1792471574
+      }
+    },
+    {
+      "endpoint": "level_leaderboards",
+      "payload": {
+        "user_id": "anon_c5bdfa01",
+        "username": "Operative_Vance",
+        "level_id": 1,
+        "clear_time_seconds": 0.0,
+        "zombies_killed": 1,
+        "timestamp": 1792687558
+      }
+    },
+    {
+      "endpoint": "level_leaderboards",
+      "payload": {
+        "user_id": "anon_c5bdfa01",
+        "username": "Operative_Vance",
+        "level_id": 1,
+        "clear_time_seconds": 0.0,
+        "zombies_killed": 1,
+        "timestamp": 1792688018
+      }
+    },
+    {
+      "endpoint": "level_leaderboards",
+      "payload": {
+        "user_id": "anon_c5bdfa01",
+        "username": "Operative_Vance",
+        "level_id": 1,
+        "clear_time_seconds": 0.0,
+        "zombies_killed": 1,
+        "timestamp": 1792767926
+      }
+    },
+    {
+      "endpoint": "level_leaderboards",
+      "payload": {
+        "user_id": "anon_c5bdfa01",
+        "username": "Operative_Vance",
+        "level_id": 1,
+        "clear_time_seconds": 129.9,
+        "zombies_killed": 9,
+        "timestamp": 1792772764
+      }
+    },
+    {
+      "endpoint": "level_leaderboards",
+      "payload": {
+        "user_id": "anon_c5bdfa01",
+        "username": "Operative_Vance",
+        "level_id": 1,
+        "clear_time_seconds": 143.5,
+        "zombies_killed": 9,
+        "timestamp": 1792773083
+      }
+    },
+    {
+      "endpoint": "level_leaderboards",
+      "payload": {
+        "user_id": "anon_c5bdfa01",
+        "username": "Operative_Vance",
+        "level_id": 1,
+        "clear_time_seconds": 0.0,
+        "zombies_killed": 1,
+        "timestamp": 1792773991
+      }
+    },
+    {
+      "endpoint": "level_leaderboards",
+      "payload": {
+        "user_id": "anon_c5bdfa01",
+        "username": "Operative_Vance",
+        "level_id": 1,
+        "clear_time_seconds": 0.0,
+        "zombies_killed": 1,
+        "timestamp": 1792849278
+      }
+    },
+    {
+      "endpoint": "level_leaderboards",
+      "payload": {
+        "user_id": "anon_c5bdfa01",
+        "username": "Operative_Vance",
+        "level_id": 1,
+        "clear_time_seconds": 73.1,
+        "zombies_killed": 9,
+        "timestamp": 1792854260
+      }
+    },
+    {
+      "endpoint": "level_leaderboards",
+      "payload": {
+        "user_id": "anon_c5bdfa01",
+        "username": "Operative_Vance",
+        "level_id": 2,
+        "clear_time_seconds": 71.8,
+        "zombies_killed": 9,
+        "timestamp": 1792854335
+      }
+    },
+    {
+      "endpoint": "level_leaderboards",
+      "payload": {
+        "user_id": "anon_c5bdfa01",
+        "username": "Operative_Vance",
+        "level_id": 1,
+        "clear_time_seconds": 0.0,
+        "zombies_killed": 1,
+        "timestamp": 1792935396
+      }
+    },
+    {
+      "endpoint": "level_leaderboards",
+      "payload": {
+        "user_id": "anon_c5bdfa01",
+        "username": "Operative_Vance",
+        "level_id": 1,
+        "clear_time_seconds": 94.5,
+        "zombies_killed": 9,
+        "timestamp": 1793026869
       }
     }
   ]

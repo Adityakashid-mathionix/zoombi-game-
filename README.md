@@ -113,8 +113,8 @@ c:\coding\game\
 ## 🔫 Weapons & Tactical Equipment
 
 ### Weapons:
-1. **Combat 12G Shotgun:** 7-pellet spread buckshot. Devastating close-range burst damage (126 max damage per blast).
-2. **M4A1 Assault Rifle:** 30-round rapid automatic fire. High DPS sustained crowd control.
+1. **Combat 12G Shotgun:** 9-pellet spread buckshot. Devastating close-range burst damage (198 max damage per blast).
+2. **M4A1 Assault Rifle:** High-velocity 3-round burst mode (75ms intra-burst fire rate). Rapid precision suppression for long-range swarm defense.
 3. **Tactical 9mm Pistol:** Pinpoint accuracy sidearm with rapid mobility and ammo conservation.
 
 ### Tactical Equipment:

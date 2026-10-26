@@ -54,13 +54,28 @@ class ProceduralSoundGenerator:
             noise = (random.random() * 2 - 1) * math.exp(-14 * t)
             return (tone * 0.5 + noise * 0.8) * env
 
-        # 3. Assault Rifle Burst (Fast metallic crack)
+        # 3. Assault Rifle High-Velocity Crack & Gunpowder Thump
         def rifle_sfx(t, dur, i):
-            env = math.exp(-22 * t)
-            freq = 450 * math.exp(-30 * t) + 150
-            tone = math.sin(2 * math.pi * freq * t)
-            noise = (random.random() * 2 - 1) * math.exp(-28 * t)
-            return (tone * 0.35 + noise * 0.65) * env
+            # Heavy low-end gunpowder punch / thump
+            punch_env = math.exp(-60 * t)
+            punch_f = 240 * math.exp(-70 * t) + 75
+            punch = math.sin(2 * math.pi * punch_f * t) * punch_env
+
+            # Metallic bolt / chamber crack
+            crack_env = math.exp(-28 * t)
+            crack_f = 620 * math.exp(-35 * t) + 190
+            crack_tone = (math.sin(2 * math.pi * crack_f * t) + 
+                          0.4 * math.sin(4 * math.pi * crack_f * t)) * crack_env
+
+            # High-pressure supersonic shockwave noise
+            noise_env = math.exp(-32 * t)
+            noise = (random.random() * 2 - 1) * noise_env
+
+            # Mechanical receiver metallic resonance ring
+            ring_env = math.exp(-20 * t)
+            ring = math.sin(2 * math.pi * 1450.0 * t) * 0.18 * ring_env
+
+            return punch * 0.65 + crack_tone * 0.45 + noise * 0.70 + ring
 
         # 4. Frag Grenade Explosion (Low thunderous rumble + blast wave)
         def explosion_sfx(t, dur, i):
@@ -189,6 +204,7 @@ class SoundManager:
         if not pg.mixer.get_init():
             try:
                 pg.mixer.init(frequency=44100, size=-16, channels=2, buffer=1024)
+                pg.mixer.set_num_channels(16)
             except Exception as e:
                 print(f"Pygame mixer initialization error: {e}")
                 self.enabled = False
@@ -216,6 +232,12 @@ class SoundManager:
             "adrenaline": "assets/sound/adrenaline.wav",
             "reload": "assets/sound/reload.wav",
             "survivor_help": "assets/sound/survivor_help.wav",
+            "engineer_help": "assets/sound/engineer_help.wav",
+            "engineer_rescued": "assets/sound/engineer_rescued.wav",
+            "zombie_king_shout": "assets/sound/zombie_king_shout.wav",
+            "zombie_king_laugh": "assets/sound/zombie_king_laugh.wav",
+            "zombie_king_attack": "assets/sound/zombie_king_attack.wav",
+            "zombie_king_death": "assets/sound/zombie_king_death.wav",
         }
 
         # Also check reference_doom sounds as alternatives
@@ -320,8 +342,48 @@ class SoundManager:
     def play_reload(self):
         self.play("reload")
 
+    def stop_voice(self):
+        """Stop any playing survivor/engineer voices to prevent overlapping."""
+        for key in ["survivor_help", "engineer_help", "engineer_rescued"]:
+            snd = self.sounds.get(key)
+            if snd:
+                try:
+                    snd.stop()
+                except Exception:
+                    pass
+
     def play_survivor_help(self):
-        if "survivor_help" in self.sounds:
+        if "engineer_help" in self.sounds:
+            self.play("engineer_help")
+        elif "survivor_help" in self.sounds:
             self.play("survivor_help")
         else:
             self.play("rescue")
+
+    def play_engineer_help(self):
+        if "engineer_help" in self.sounds:
+            self.play("engineer_help")
+        elif "survivor_help" in self.sounds:
+            self.play("survivor_help")
+        else:
+            self.play("rescue")
+
+    def play_engineer_rescued(self):
+        self.stop_voice()
+        if "engineer_rescued" in self.sounds:
+            self.play("engineer_rescued")
+        else:
+            self.play("rescue")
+
+    def play_zombie_king_shout(self):
+        self.play("zombie_king_shout")
+
+    def play_zombie_king_laugh(self):
+        self.play("zombie_king_laugh")
+
+    def play_zombie_king_attack(self):
+        self.play("zombie_king_attack")
+
+    def play_zombie_king_death(self):
+        self.play("zombie_king_death")
+

@@ -77,7 +77,7 @@ class LevelMap:
             self.door_positions[(7, 10)] = {"locked": True, "required_keycard": "red", "open": False}
 
             self.pickups = [
-                {"type": "keycard_red", "pos": (13.5, 2.5), "collected": False},
+                {"type": "keycard_red", "pos": (14.5, 2.5), "collected": False},
                 {"type": "medkit", "pos": (1.5, 5.5), "collected": False},
                 {"type": "medkit", "pos": (6.5, 11.5), "collected": False},
                 {"type": "ammo", "pos": (9.5, 1.5), "collected": False},
@@ -88,7 +88,7 @@ class LevelMap:
             self.zombie_spawns = [
                 {"type": "walker", "pos": (6.5, 3.5)},
                 {"type": "walker", "pos": (9.5, 3.5)},
-                {"type": "walker", "pos": (3.5, 7.5)},
+                {"type": "walker", "pos": (4.5, 7.5)},
                 {"type": "runner", "pos": (12.5, 5.5)},
                 {"type": "runner", "pos": (10.5, 7.5)},
                 {"type": "walker", "pos": (1.5, 9.5)},
@@ -118,7 +118,7 @@ class LevelMap:
                 [w, _, _, _, w, _, _, _, _, w, _, _, _, e, _, w],
                 [w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w],
             ]
-            self.player_start = (2.5, 2.5)
+            self.player_start = (1.5, 1.5)
             self.survivor_pos = (7.5, 13.5)
             self.extraction_pos = (13.5, 14.5)
             self.door_positions[(7, 12)] = {"locked": True, "required_keycard": "yellow", "open": False}
@@ -136,7 +136,7 @@ class LevelMap:
                 {"type": "runner", "pos": (7.5, 3.5)},
                 {"type": "walker", "pos": (11.5, 3.5)},
                 {"type": "walker", "pos": (3.5, 5.5)},
-                {"type": "runner", "pos": (13.5, 7.5)},
+                {"type": "runner", "pos": (14.5, 7.5)},
                 {"type": "spitter", "pos": (5.5, 9.5)},
                 {"type": "walker", "pos": (11.5, 9.5)},
                 {"type": "runner", "pos": (4.5, 11.5)},
@@ -165,7 +165,7 @@ class LevelMap:
                 [w, _, w, w, w, _, _, _, _, _, w, w, _, e, _, w],
                 [w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w],
             ]
-            self.player_start = (2.5, 2.5)
+            self.player_start = (1.5, 1.5)
             self.survivor_pos = (7.5, 12.5)
             self.extraction_pos = (13.5, 14.5)
             self.door_positions[(7, 10)] = {"locked": True, "required_keycard": "blue", "open": False}
@@ -173,7 +173,7 @@ class LevelMap:
             self.pickups = [
                 {"type": "keycard_blue", "pos": (14.5, 1.5), "collected": False},
                 {"type": "medkit", "pos": (1.5, 7.5), "collected": False},
-                {"type": "medkit", "pos": (6.5, 13.5), "collected": False},
+                {"type": "medkit", "pos": (5.5, 13.5), "collected": False},
                 {"type": "ammo", "pos": (7.5, 3.5), "collected": False},
                 {"type": "ammo", "pos": (1.5, 11.5), "collected": False},
                 {"type": "armor", "pos": (12.5, 7.5), "collected": False},
@@ -189,7 +189,7 @@ class LevelMap:
                 {"type": "runner", "pos": (12.5, 7.5)},
                 {"type": "brute", "pos": (7.5, 9.5)},  # Elite brute defender
                 {"type": "walker", "pos": (2.5, 11.5)},
-                {"type": "spitter", "pos": (12.5, 12.5)},
+                {"type": "spitter", "pos": (11.5, 12.5)},
             ]
 
         elif self.level_id == 4:
@@ -213,8 +213,8 @@ class LevelMap:
                 [w, _, w, w, w, w, w, _, w, w, w, w, w, e, _, w],
                 [w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w],
             ]
-            self.player_start = (2.5, 2.5)
-            self.survivor_pos = (8.5, 12.5)
+            self.player_start = (1.5, 1.5)
+            self.survivor_pos = (7.5, 13.5)
             self.extraction_pos = (13.5, 14.5)
             self.door_positions[(7, 10)] = {"locked": True, "required_keycard": "green", "open": False}
 
@@ -262,7 +262,7 @@ class LevelMap:
                 [w, _, _, _, w, _, _, _, _, w, _, _, _, e, _, w],
                 [w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w],
             ]
-            self.player_start = (2.5, 2.5)
+            self.player_start = (1.5, 1.5)
             self.survivor_pos = (7.5, 13.5)
             self.extraction_pos = (13.5, 14.5)
             self.door_positions[(7, 10)] = {"locked": True, "required_keycard": "purple", "open": False}
@@ -274,9 +274,9 @@ class LevelMap:
                 {"type": "ammo", "pos": (7.5, 3.5), "collected": False},
                 {"type": "ammo", "pos": (14.5, 7.5), "collected": False},
                 {"type": "armor", "pos": (1.5, 13.5), "collected": False},
-                {"type": "grenade", "pos": (11.5, 9.5), "collected": False},
+                {"type": "grenade", "pos": (12.5, 9.5), "collected": False},
                 {"type": "stim", "pos": (1.5, 3.5), "collected": False},
-                {"type": "stim", "pos": (13.5, 13.5), "collected": False},
+                {"type": "stim", "pos": (12.5, 13.5), "collected": False},
             ]
             self.zombie_spawns = [
                 {"type": "runner", "pos": (5.5, 1.5)},
@@ -312,8 +312,8 @@ class LevelMap:
                 [w, _, _, _, w, _, _, w, _, _, w, _, _, e, _, w],
                 [w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w],
             ]
-            self.player_start = (2.5, 2.5)
-            self.survivor_pos = (7.5, 12.5)
+            self.player_start = (1.5, 1.5)
+            self.survivor_pos = (6.5, 13.5)
             self.extraction_pos = (13.5, 14.5)
             self.door_positions[(7, 10)] = {"locked": True, "required_keycard": "orange", "open": False}
 
@@ -360,7 +360,7 @@ class LevelMap:
                 [w, _, _, _, w, _, _, _, _, w, _, _, _, e, _, w],
                 [w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w],
             ]
-            self.player_start = (2.5, 2.5)
+            self.player_start = (1.5, 1.5)
             self.survivor_pos = (7.5, 12.5)
             self.extraction_pos = (13.5, 14.5)
             self.door_positions[(7, 10)] = {"locked": True, "required_keycard": "crimson", "open": False}
@@ -380,7 +380,7 @@ class LevelMap:
                 {"type": "brute", "pos": (11.5, 3.5)},
                 {"type": "spitter", "pos": (3.5, 5.5)},
                 {"type": "runner", "pos": (13.5, 5.5)},
-                {"type": "brute", "pos": (7.5, 7.5)},
+                {"type": "brute", "pos": (8.5, 7.5)},
                 {"type": "walker", "pos": (1.5, 9.5)},
                 {"type": "runner", "pos": (12.5, 9.5)},
                 {"type": "spitter", "pos": (3.5, 13.5)},
@@ -408,8 +408,8 @@ class LevelMap:
                 [w, _, w, w, w, w, w, _, w, w, w, w, w, e, _, w],
                 [w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w],
             ]
-            self.player_start = (2.5, 2.5)
-            self.survivor_pos = (8.5, 12.5)
+            self.player_start = (1.5, 1.5)
+            self.survivor_pos = (7.5, 13.5)
             self.extraction_pos = (13.5, 14.5)
             self.door_positions[(7, 10)] = {"locked": True, "required_keycard": "gold", "open": False}
 
@@ -430,7 +430,7 @@ class LevelMap:
                 {"type": "brute", "pos": (9.5, 5.5)},
                 {"type": "runner", "pos": (13.5, 7.5)},
                 {"type": "spitter", "pos": (7.5, 7.5)},
-                {"type": "brute", "pos": (8.5, 9.5)},
+                {"type": "king", "pos": (8.5, 9.5)},
                 {"type": "runner", "pos": (13.5, 11.5)},
                 {"type": "spitter", "pos": (3.5, 13.5)},
                 {"type": "brute", "pos": (11.5, 13.5)},
@@ -486,3 +486,9 @@ class LevelMap:
                 del self.world_map[tile_pos]
             return True
         return False
+
+    def is_door_open(self):
+        """Returns True if any security door in the level is unlocked/open."""
+        if not self.door_positions:
+            return True
+        return any(d["open"] for d in self.door_positions.values())

@@ -114,24 +114,67 @@ class PickupSprite(BaseSprite):
             self.game.hud.show_message(f"SECURITY KEYCARD ACQUIRED ({kc_color.upper()})!", (255, 230, 40))
 
 
+class PrisonBarsSprite(BaseSprite):
+    """Heavy iron prison rods cage surrounding the survivor before the security door opens."""
+    def __init__(self, game, x, y):
+        super().__init__(game, x, y, scale=0.88, height_shift=0.12)
+        self.current_surface = getattr(self.game.asset_manager, "prison_bars_texture", None)
+
+
 class SurvivorNPC(BaseSprite):
     """Level specific VIP Survivor waiting for extraction with audio/visual help shouts and escort behavior."""
     def __init__(self, game, level_id, x, y):
-        super().__init__(game, x, y, scale=0.78, height_shift=0.22)
+        super().__init__(game, x, y, scale=0.84, height_shift=0.16)
         self.level_id = level_id
         self.frames = self.game.asset_manager.survivor_sprites.get(level_id, [])
         self.anim_idx = 0
         self.anim_timer = 0
         self.rescued = False
         self.current_surface = self.frames[0] if self.frames else None
+        self.prison_bars = PrisonBarsSprite(game, x, y)
         self.shout_cooldown = 1200
-        self.shouts = [
-            "HELP! OVER HERE, SERGEANT!",
-            "PLEASE SAVE ME! I'M TRAPPED IN HERE!",
-            "SERGEANT VANCE! BEHIND THIS DOOR!",
-            "HELP ME! THE HORDE IS CLOSING IN!",
-            "OVER HERE! I HAVE THE RESEARCH INTEL!",
-        ]
+        if self.level_id == 1:
+            self.shouts = [
+                "HELP ME, I'M HERE! IT'S TOO SCARY COMMANDER, PLEASE HELP ME!",
+                "HELP ME, I'M HERE! IT'S TOO SCARY COMMANDER, PLEASE HELP ME! (CR THE ENGINEER)",
+                "COMMANDER! HELP ME, I'M HERE! SHLOK IS TRAPPED IN THIS CELL!",
+                "HELP ME, I'M HERE! IT'S TOO SCARY COMMANDER, PLEASE HELP ME!",
+            ]
+        elif self.level_id == 2:
+            self.shouts = [
+                "HELP ME! PLEASE SAVE ME, IT'S SO SCARY! MISS RAKHI IS TRAPPED HERE!",
+                "SOMEBODY HELP ME! THE ZOMBIES ARE OUTSIDE, PLEASE UNLOCK THE PRISON BARS!",
+                "PLEASE HURRY! I'M TERRIFIED! PLEASE DON'T LEAVE MISS RAKHI HERE!",
+                "HELP ME! GET THE KEYCARD AND OPEN THIS CAGE! I'M SO SCARED!",
+            ]
+        elif self.level_id == 6:
+            self.shouts = [
+                "HELP ME! COMMANDER, SAVE ME! PAPU IS TRAPPED IN THE BIO-DOME!",
+                "PLEASE HURRY! THE ZOMBIES ARE BREAKING INTO THE GREENHOUSE! SAVE PAPU!",
+                "COMMANDER! I HAVE THE BOTANICAL PATHOGEN INHIBITOR, OPEN THIS CAGE!",
+                "HELP! GET THE ORANGE KEYCARD AND OPEN THIS PRISON BARS! PAPU NEEDS RESCUE!",
+            ]
+        elif self.level_id == 7:
+            self.shouts = [
+                "HELP ME! HEY BHAGWAN, SAVE ME! PANDITJI IS TRAPPED IN THE CATACOMBS!",
+                "OM NAMAH SHIVAYA! PLEASE UNLOCK THE PRISON CAGE, COMMANDER!",
+                "PLEASE HURRY! THE DEMONS ARE SURROUNDING ME! UNLOCK THE VAULT BARS!",
+                "HELP ME! FIND THE CRIMSON KEYCARD AND OPEN THIS CAGE! PRANAM COMMANDER!",
+            ]
+        elif self.level_id == 8:
+            self.shouts = [
+                "MITRON! SAVE ME! MODINHO IS TRAPPED AT THE AIRBASE!",
+                "COMMANDER! UNLOCK THE RUNWAY CAGE WITH THE GOLD KEYCARD!",
+                "NAMASTE! HELP ME DEFEAT THIS APOCALYPSE, SECURE THE EVAC RUNWAY!",
+                "BHAIYO AUR BEHENO! MODINHO IS CALLING FOR IMMEDIATE EXTRACTION!",
+            ]
+        else:
+            self.shouts = [
+                "HELP! I'M TRAPPED IN THIS PRISON CAGE! UNLOCK THE SECURITY DOOR!",
+                "PLEASE OPEN THE DOOR! THE PRISON BARS ARE LOCKED!",
+                "SERGEANT! UNLOCK THE DOOR TO OPEN THESE PRISON BARS!",
+                "HELP ME! THE PRISON CAGE IS LOCKED! GET THE KEYCARD!",
+            ]
 
     def update(self, dt):
         # Idle breathing / waving animation
@@ -149,11 +192,13 @@ class SurvivorNPC(BaseSprite):
             if dist <= 6.5:
                 self.shout_cooldown -= dt
                 if self.shout_cooldown <= 0:
-                    self.shout_cooldown = 3500
+                    self.shout_cooldown = 8500 if self.level_id == 1 else 3500
                     shout_msg = random.choice(self.shouts)
                     meta = self.game.level_map.meta
-                    self.game.hud.show_message(f"🚨 {meta['survivor'].upper()}: \"{shout_msg}\"", (255, 215, 50), 3200)
-                    if hasattr(self.game.sound_manager, "play_survivor_help"):
+                    self.game.hud.show_message(f"🚨 {meta['survivor'].upper()}: \"{shout_msg}\"", (255, 215, 50), 5000)
+                    if self.level_id == 1 and hasattr(self.game.sound_manager, "play_engineer_help"):
+                        self.game.sound_manager.play_engineer_help()
+                    elif hasattr(self.game.sound_manager, "play_survivor_help"):
                         self.game.sound_manager.play_survivor_help()
                     else:
                         self.game.sound_manager.play("rescue")
@@ -182,12 +227,41 @@ class SurvivorNPC(BaseSprite):
         self.rescued = True
         self.game.level_map.survivor_rescued = True
         self.game.level_map.extraction_unlocked = True
+        if hasattr(self.game.sound_manager, "stop_voice"):
+            self.game.sound_manager.stop_voice()
         self.game.sound_manager.play_rescue()
         meta = self.game.level_map.meta
-        self.game.hud.show_message(
-            f"★ RESCUED {meta['survivor'].upper()}! \"Thank you Vance, I'm right behind you to Evac!\"",
-            (60, 240, 120), 4500
-        )
+        if self.level_id == 1 and hasattr(self.game.sound_manager, "play_engineer_rescued"):
+            self.game.sound_manager.play_engineer_rescued()
+            self.game.hud.show_message(
+                f"★ RESCUED {meta['survivor'].upper()}! \"Thank you Commander for the help! We have to defeat the Zombie King!\"",
+                (60, 240, 120), 6500
+            )
+        elif self.level_id == 2:
+            self.game.hud.show_message(
+                f"★ RESCUED MISS RAKHI! \"Thank goodness you came! I thought the zombies would break in! Let's get out of here!\"",
+                (255, 120, 200), 6500
+            )
+        elif self.level_id == 6:
+            self.game.hud.show_message(
+                f"★ RESCUED PAPU! \"Thank you Commander! Together we will defeat these zombies and reach the Evac zone!\"",
+                (255, 165, 50), 6500
+            )
+        elif self.level_id == 7:
+            self.game.hud.show_message(
+                f"★ RESCUED PANDITJI MAHARAJ! \"Dhanyawad Commander! May Mahadev bless you! I will guide you safely out of these catacombs!\"",
+                (255, 180, 50), 6500
+            )
+        elif self.level_id == 8:
+            self.game.hud.show_message(
+                f"★ RESCUED MODINHO! \"Namaste Commander! Together with 140 crore blessings, victory is ours! Let's reach the Evac plane!\"",
+                (255, 205, 40), 6500
+            )
+        else:
+            self.game.hud.show_message(
+                f"★ RESCUED {meta['survivor'].upper()}! \"Thank you Vance, I'm right behind you to Evac!\"",
+                (60, 240, 120), 4500
+            )
 
 
 class ZombieNPC(BaseSprite):
@@ -228,6 +302,17 @@ class ZombieNPC(BaseSprite):
             self.attack_range = 1.3
             self.scale = 1.00
             self.height_shift = 0.04
+        elif zombie_type == "king":
+            self.health = int(550 * diff_hp)
+            self.max_health = self.health
+            self.speed = 0.0020 * diff_spd
+            self.damage = int(36 * diff_dmg)
+            self.attack_range = 1.35
+            self.scale = 1.20
+            self.height_shift = -0.04
+            self.has_shouted = False
+            self.shout_cooldown = 0
+            self.laugh_cooldown = 4000
         else:  # walker
             self.health = int(95 * diff_hp)
             self.speed = 0.0017 * diff_spd
@@ -250,7 +335,14 @@ class ZombieNPC(BaseSprite):
         if not self.alive:
             return
         self.health -= dmg
-        self.game.sound_manager.play_zombie_pain()
+        if self.zombie_type == "king":
+            if self.health > 0:
+                self.game.sound_manager.play_zombie_pain()
+                if random.random() < 0.28 and hasattr(self.game.sound_manager, "play_zombie_king_laugh"):
+                    self.game.sound_manager.play_zombie_king_laugh()
+                    self.game.hud.show_message("👑 ZOMBIE KING: \"YOUR WEAPONS CANNOT HARM THE KING!\"", (255, 60, 60), 3000)
+        else:
+            self.game.sound_manager.play_zombie_pain()
         if self.health <= 0:
             self.die()
         else:
@@ -263,15 +355,24 @@ class ZombieNPC(BaseSprite):
         self.state = "death"
         self.anim_idx = 0
         self.anim_timer = 0
-        self.game.sound_manager.play_zombie_death()
-        self.game.player.kills += 1
-
-        # Chance to drop ammo or medkit
-        drop_roll = random.random()
-        if drop_roll < 0.25:
+        if self.zombie_type == "king":
+            if hasattr(self.game.sound_manager, "play_zombie_king_death"):
+                self.game.sound_manager.play_zombie_king_death()
+            else:
+                self.game.sound_manager.play_zombie_death()
+            self.game.hud.show_message("👑 THE ZOMBIE KING HAS BEEN DESTROYED! THE HORDE CRUMBLES! 👑", (255, 215, 0), 7000)
             self.game.sprite_manager.spawn_pickup("ammo", self.x, self.y)
-        elif drop_roll < 0.40:
-            self.game.sprite_manager.spawn_pickup("medkit", self.x, self.y)
+            self.game.sprite_manager.spawn_pickup("medkit", self.x + 0.4, self.y)
+            self.game.sprite_manager.spawn_pickup("stim", self.x - 0.4, self.y)
+        else:
+            self.game.sound_manager.play_zombie_death()
+            # Chance to drop ammo or medkit
+            drop_roll = random.random()
+            if drop_roll < 0.25:
+                self.game.sprite_manager.spawn_pickup("ammo", self.x, self.y)
+            elif drop_roll < 0.40:
+                self.game.sprite_manager.spawn_pickup("medkit", self.x, self.y)
+        self.game.player.kills += 1
 
     def update_ai(self, dt):
         if not self.alive:
@@ -284,12 +385,34 @@ class ZombieNPC(BaseSprite):
         # Line of sight check
         has_los = not self.game.weapon_manager.check_wall_between(self.x, self.y, px, py)
 
+        # King Zombie voice shout and laughter behavior
+        if self.zombie_type == "king":
+            self.shout_cooldown -= dt
+            self.laugh_cooldown -= dt
+            # Trigger terrifying "I AM THE KING!" shout when player approaches
+            if (has_los and dist_to_player <= 8.5) or dist_to_player <= 5.0:
+                if not self.has_shouted or self.shout_cooldown <= 0:
+                    self.has_shouted = True
+                    self.shout_cooldown = 18000
+                    if hasattr(self.game.sound_manager, "play_zombie_king_shout"):
+                        self.game.sound_manager.play_zombie_king_shout()
+                    self.game.hud.show_message("👑 ZOMBIE KING: \"I AM THE KING! HAHAHAHAHA!\"", (255, 45, 45), 5500)
+            # Periodic sinister laughter during pursuit
+            if self.laugh_cooldown <= 0 and dist_to_player <= 6.5 and has_los:
+                self.laugh_cooldown = 12000
+                if hasattr(self.game.sound_manager, "play_zombie_king_laugh"):
+                    self.game.sound_manager.play_zombie_king_laugh()
+                self.game.hud.show_message("👑 ZOMBIE KING: \"MWAHAHAHA! BOW BEFORE YOUR KING!\"", (255, 75, 75), 3500)
+
         # Attack logic
         if dist_to_player <= self.attack_range and has_los:
             self.state = "attack"
             if now - self.last_attack_time >= self.attack_cooldown_ms:
                 self.last_attack_time = now
-                self.game.sound_manager.play_zombie_attack()
+                if self.zombie_type == "king" and hasattr(self.game.sound_manager, "play_zombie_king_attack"):
+                    self.game.sound_manager.play_zombie_king_attack()
+                else:
+                    self.game.sound_manager.play_zombie_attack()
                 self.game.player.take_damage(self.damage)
             return
 
@@ -339,17 +462,26 @@ class ZombieNPC(BaseSprite):
 
 class SpriteManager:
     """Orchestrates all active entities, pickups, survivors, and projected render surfaces."""
+    RESPAWN_DELAY_SEC = 60.0
+
     def __init__(self, game):
         self.game = game
         self.zombies = []
+        self.initial_zombie_spawns = []
         self.pickups = []
         self.survivor = None
         self.sprites_to_render = []
+        self.respawn_active = False
+        self.respawn_timer = 0.0
+        self.respawn_waves_cleared = 0
         self.load_level_entities()
 
     def load_level_entities(self):
         self.zombies.clear()
         self.pickups.clear()
+        self.respawn_active = False
+        self.respawn_timer = 0.0
+        self.respawn_waves_cleared = 0
 
         # Load pickups from level map
         for p in self.game.level_map.pickups:
@@ -360,9 +492,25 @@ class SpriteManager:
         spos = self.game.level_map.survivor_pos
         self.survivor = SurvivorNPC(self.game, self.game.level_map.level_id, spos[0], spos[1])
 
-        # Load Zombies
-        for z in self.game.level_map.zombie_spawns:
+        # Load Zombies & save initial spawn definitions for wave respawns
+        self.initial_zombie_spawns = [
+            {"type": z["type"], "pos": (float(z["pos"][0]), float(z["pos"][1]))}
+            for z in self.game.level_map.zombie_spawns
+        ]
+        for z in self.initial_zombie_spawns:
             self.zombies.append(ZombieNPC(self.game, z["type"], z["pos"][0], z["pos"][1]))
+
+    def respawn_all_zombies(self):
+        """Respawns every killed zombie back into the level with full health."""
+        self.zombies.clear()
+        for z in self.initial_zombie_spawns:
+            self.zombies.append(ZombieNPC(self.game, z["type"], z["pos"][0], z["pos"][1]))
+        self.respawn_active = False
+        self.respawn_timer = 0.0
+        self.respawn_waves_cleared += 1
+        if hasattr(self.game.sound_manager, "play_zombie_groan"):
+            self.game.sound_manager.play_zombie_groan()
+        self.game.hud.show_message("☣ ALERT: ZOMBIE HORDE HAS RESPAWNED! ☣", (255, 60, 60), 4500)
 
     def spawn_pickup(self, ptype, x, y):
         self.pickups.append(PickupSprite(self.game, ptype, x, y))
@@ -384,6 +532,30 @@ class SpriteManager:
             proj = self.survivor.calculate_projection()
             if proj:
                 self.sprites_to_render.append(proj)
+                # If the security door is not open yet, render the iron prison bars cage in front of survivor
+                if hasattr(self.survivor, "prison_bars") and self.survivor.prison_bars:
+                    if hasattr(self.game.level_map, "is_door_open") and not self.game.level_map.is_door_open():
+                        bars_proj = self.survivor.prison_bars.calculate_projection()
+                        if bars_proj:
+                            # Render prison bars in front of survivor: depth - 0.04
+                            b_depth, b_img, b_pos = bars_proj
+                            self.sprites_to_render.append((max(0.01, b_depth - 0.04), b_img, b_pos))
+
+        # Check zombie alive status & 60-second respawn countdown
+        alive_count = sum(1 for z in self.zombies if z.alive)
+        if len(self.zombies) > 0:
+            if alive_count == 0:
+                if not self.respawn_active:
+                    self.respawn_active = True
+                    self.respawn_timer = self.RESPAWN_DELAY_SEC
+                    self.game.hud.show_message("⚠️ ALL ZOMBIES KILLED! HORDE RESPAWNS IN 60s ⚠️", (255, 200, 40), 4000)
+                else:
+                    self.respawn_timer -= dt / 1000.0
+                    if self.respawn_timer <= 0.0:
+                        self.respawn_all_zombies()
+            else:
+                self.respawn_active = False
+                self.respawn_timer = 0.0
 
         # Update zombies
         for z in self.zombies:
