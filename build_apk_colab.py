@@ -69,6 +69,7 @@ def main():
         "sudo apt-get install -y -qq "
         "git zip unzip autoconf libtool pkg-config zlib1g-dev "
         "libncurses5-dev libncursesw5-dev libtinfo6 cmake libffi-dev "
+        "libltdl-dev autopoint gettext m4 "
         "libssl-dev build-essential ccache openjdk-17-jdk",
         "Installing build toolchains & Java SDK"
     )

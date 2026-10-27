@@ -13,13 +13,13 @@ package.domain = org.zombiapploclips
 source.dir = .
 
 # (list) Source files to include (let empty to include all the files)
-source.include_exts = py,png,jpg,jpeg,wav,mp3,json,txt,spec
+source.include_exts = py,png,jpg,jpeg,wav,mp3,ogg,m4a,webp,json,txt,spec,ttf,otf
 
 # (list) List of directory to include
 source.include_dirs = assets,backend,engine,ui
 
 # (list) List of exclusions using pattern matching
-source.exclude_patterns = reference_doom/*,.git/*,__pycache__/*
+source.exclude_patterns = reference_doom/*,.git/*,__pycache__/*,*.zip,*.tar.gz,scratch/*
 
 # (str) Application versioning
 version = 1.0.0

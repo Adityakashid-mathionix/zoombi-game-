@@ -28,12 +28,14 @@ class Game:
     def __init__(self):
         pg.init()
         pg.display.set_caption("Zombi Apploclips")
-        self.screen = pg.display.set_mode(RES)
+        flags = pg.SCALED if hasattr(pg, "SCALED") else 0
+        self.screen = pg.display.set_mode(RES, flags)
         self.clock = pg.time.Clock()
         self.delta_time = 1.0
         self.elapsed_time = 0.0
         self.state = "LOBBY"  # LOBBY, GAMEPLAY, VICTORY, GAME_OVER
         self.mouse_look_enabled = False
+        self.is_suspended = False
 
         # Initialize Backend Services
         self.supabase_service = SupabaseService()
@@ -136,9 +138,37 @@ class Game:
                 pg.quit()
                 sys.exit()
 
-            # Global ESC key logic
+            # Android lifecycle suspend / resume handling
+            if event.type in (
+                getattr(pg, "APP_WILLENTERBACKGROUND", -101),
+                getattr(pg, "APP_DIDENTERBACKGROUND", -102),
+                getattr(pg, "WINDOWMINIMIZED", -103)
+            ):
+                self.is_suspended = True
+                try:
+                    pg.mixer.pause()
+                    pg.mixer.music.pause()
+                except Exception:
+                    pass
+                continue
+
+            if event.type in (
+                getattr(pg, "APP_WILLENTERFOREGROUND", -104),
+                getattr(pg, "APP_DIDENTERFOREGROUND", -105),
+                getattr(pg, "WINDOWRESTORED", -106)
+            ):
+                self.is_suspended = False
+                try:
+                    pg.mixer.unpause()
+                    pg.mixer.music.unpause()
+                except Exception:
+                    pass
+                self.clock.tick(FPS)
+                continue
+
+            # Global ESC & Android Back button logic
             if event.type == pg.KEYDOWN:
-                if event.key == pg.K_ESCAPE:
+                if event.key in (pg.K_ESCAPE, getattr(pg, "K_AC_BACK", -107)):
                     if self.state == "GAMEPLAY":
                         self.return_to_lobby()
                     elif self.state in ("VICTORY", "GAME_OVER"):
@@ -211,6 +241,9 @@ class Game:
                     self.game_over_modal.handle_click(mx, my)
 
     def update(self):
+        if self.is_suspended:
+            return
+
         dt = self.delta_time
 
         if self.state == "GAMEPLAY":
