@@ -481,7 +481,7 @@ class LobbyMenu:
         badges = [
             (1, "CADUCEUS BADGE", "Dr. Sarah Chen (Field Doctor)", "Extracted medical triage personnel."),
             (2, "CIRCUIT BREAKER", "Marcus Vance (Electrical Engineer)", "Secured metro power grid telemetry."),
-            (3, "PATHFINDER STAR", "Sergeant Ramos (Military Scout)", "Recovered city center barricade radar."),
+            (3, "PATHFINDER STAR", "Jethalal Gada (Gada Electronics)", "Rescued Gokuldham's beloved Jethalal from barricades."),
             (4, "ANTIDOTE HARVESTER", "Dr. Elena Rostova (Virologist)", "Protected mutated pathogen samples."),
             (5, "APOCALYPSE SAVIOR", "Dr. Arthur Sterling (Head Scientist)", "Extracted master vaccine dispersal data."),
             (6, "FLORA SHIELD", "Papu (VIP Survivor Specialist)", "Secured botanical cellular inhibitor."),

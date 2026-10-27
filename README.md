@@ -20,7 +20,7 @@ Your mission: Infiltrate five quarantine zones, eliminate zombie swarms, locate 
 | :--- | :--- | :--- | :--- | :--- |
 | **Level 1** | **Outpost Medical Bay** | Red Medical Keycard | **Dr. Sarah Chen** | Field Doctor carrying viral incubation data |
 | **Level 2** | **Abandoned Subway System** | Yellow Transit Keycard | **Marcus Vance** | Electrical Engineer with transit power bypass access |
-| **Level 3** | **City Center Barricade** | Blue Tactical Keycard | **Sergeant Ramos** | Military Recon Scout with horde telemetry maps |
+| **Level 3** | **City Center Barricade** | Blue Tactical Keycard | **Jethalal Gada** | Gada Electronics owner terrified behind barricades |
 | **Level 4** | **Industrial Chemical Plant** | Green HAZMAT Keycard | **Dr. Elena Rostova** | Virology Specialist with live pathogen samples |
 | **Level 5** | **Sub-level Research Lab** | Purple Master Keycard | **Dr. Arthur Sterling** | Head BioCorp Scientist with the Master Antidote |
 | **Level 6** | **Bio-Dome Hydroponics** | Orange Botanical Keycard | **Dr. Maya Lin** | Botanist Specialist with cellular pathogen inhibitor |
@@ -132,7 +132,7 @@ c:\coding\game\
 - **Rescue Badges:** Awards and records unique campaign honor badges for extracting each of the 5 survivors:
   - *Caduceus Badge* (Field Doctor)
   - *Circuit Breaker* (Electrical Engineer)
-  - *Pathfinder Star* (Military Scout)
+  - *Pathfinder Star* (Jethalal Gada)
   - *Antidote Harvester* (Virology Specialist)
   - *Apocalypse Savior* (Head Scientist)
 - **Offline Fallback:** When running offline or before setting keys, a built-in local cache (`supabase_local_cache.json`) provides seamless offline rankings and records.

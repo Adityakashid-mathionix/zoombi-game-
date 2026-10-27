@@ -92,9 +92,9 @@ LEVELS_DATA = {
     3: {
         "title": "Level 3: City Center Barricade",
         "subtitle": "Downtown Checkpoint Omega",
-        "survivor": "Military Scout",
-        "survivor_name": "Sergeant Ramos",
-        "survivor_bio": "Recon scout with zombie horde telemetry & air route maps.",
+        "survivor": "Jethalal Gada",
+        "survivor_name": "Jethalal Gada",
+        "survivor_bio": "Beloved proprietor of Gada Electronics, terrified and trapped behind the barricade.",
         "keycard_name": "Blue Tactical Keycard",
         "keycard_color": (35, 145, 245),
         "theme": "barricade",

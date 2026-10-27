@@ -147,6 +147,13 @@ class SurvivorNPC(BaseSprite):
                 "PLEASE HURRY! I'M TERRIFIED! PLEASE DON'T LEAVE MISS RAKHI HERE!",
                 "HELP ME! GET THE KEYCARD AND OPEN THIS CAGE! I'M SO SCARED!",
             ]
+        elif self.level_id == 3:
+            self.shouts = [
+                "HELP ME! BAPUJI! DAYA! ZOMBIES AAGAYE HAIN! PLEASE SAVE JETHALAL!",
+                "HEY BHAGWAN! COMMANDER BHAI, JALDI BARS KHOLO! MAIN GADA ELECTRONICS KA JETHALAL HOON!",
+                "CHACHAJI BACHAO! COMMANDER, GET THE BLUE TACTICAL KEYCARD AND RESCUE ME!",
+                "HELP ME! GADA ELECTRONICS KHAALI HO JAYEGA! RESCUE JETHALAL FROM THIS CAGE!",
+            ]
         elif self.level_id == 6:
             self.shouts = [
                 "HELP ME! COMMANDER, SAVE ME! PAPU IS TRAPPED IN THE BIO-DOME!",
@@ -179,7 +186,8 @@ class SurvivorNPC(BaseSprite):
     def update(self, dt):
         # Idle breathing / waving animation
         self.anim_timer += dt
-        if self.anim_timer >= 450:
+        anim_speed = 280 if self.level_id == 3 else 450
+        if self.anim_timer >= anim_speed:
             self.anim_timer = 0
             self.anim_idx = (self.anim_idx + 1) % len(self.frames) if self.frames else 0
             if self.frames:
@@ -209,11 +217,11 @@ class SurvivorNPC(BaseSprite):
             elif self.game.player.near_survivor == self and dist >= 2.0:
                 self.game.player.near_survivor = None
 
-        # 2. Rescued Companion Escort Follower: follows behind player toward EVAC
+        # 2. Rescued Companion Escort Follower: follows behind player toward EVAC (Jethalal runs fast!)
         else:
             if dist > 1.6:
                 angle = math.atan2(self.game.player.y - self.y, self.game.player.x - self.x)
-                speed = 0.0022 * dt
+                speed = (0.0036 if self.level_id == 3 else 0.0022) * dt
                 dx = math.cos(angle) * speed
                 dy = math.sin(angle) * speed
                 if not self.game.level_map.is_wall(self.x + dx * 1.5, self.y):
@@ -241,6 +249,11 @@ class SurvivorNPC(BaseSprite):
             self.game.hud.show_message(
                 f"★ RESCUED MISS RAKHI! \"Thank goodness you came! I thought the zombies would break in! Let's get out of here!\"",
                 (255, 120, 200), 6500
+            )
+        elif self.level_id == 3:
+            self.game.hud.show_message(
+                f"★ RESCUED JETHALAL GADA! \"Ae pagal aurat nahi, Commander! Thank you so much bhai! Bapuji ki kasam, let's run fast!\"",
+                (255, 190, 40), 6500
             )
         elif self.level_id == 6:
             self.game.hud.show_message(

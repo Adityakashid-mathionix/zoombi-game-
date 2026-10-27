@@ -145,7 +145,7 @@ class LevelMap:
             ]
 
         elif self.level_id == 3:
-            # Level 3: City Center Barricade (Rescue: Military Scout)
+            # Level 3: City Center Barricade (Rescue: Jethalal Gada)
             # Layout: Ruined Crossroads -> Police Outpost -> Checkpoint Charlie (Blue Keycard) -> APC Evac
             self.grid = [
                 [w, w, w, w, w, w, w, w, w, w, w, w, w, w, w, w],
