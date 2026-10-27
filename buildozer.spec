@@ -74,8 +74,14 @@ android.archs = arm64-v8a
 # (bool) enables Android auto backup feature (Android API >=23)
 android.allow_backup = True
 
+# (str) python-for-android git clone url
+p4a.url = https://github.com/AnGlonchas/python-for-android.git
+
 # (str) python-for-android branch to use, defaults to master
 p4a.branch = develop
+
+# (str) The directory in which python-for-android should look for your own build recipes
+p4a.local_recipes = ./recipes
 
 # (str) Bootstrap to use for android
 p4a.bootstrap = sdl2
