@@ -8,18 +8,18 @@ import pygame as pg
 from engine.settings import (
     WIDTH, HEIGHT, HALF_WIDTH, HALF_HEIGHT, COLOR_WHITE, COLOR_BLOOD, COLOR_AMBER,
     COLOR_CYAN, COLOR_GREEN, COLOR_PURPLE, COLOR_DARK_GRAY,
-    COLOR_YELLOW, COLOR_GOLD
+    COLOR_YELLOW, COLOR_GOLD, get_font
 )
 
 
 class InGameHUD:
     def __init__(self, game):
         self.game = game
-        self.font_title = pg.font.SysFont("Arial", 18, bold=True)
-        self.font_hud = pg.font.SysFont("Arial", 16, bold=True)
-        self.font_large = pg.font.SysFont("Arial", 28, bold=True)
-        self.font_small = pg.font.SysFont("Arial", 12, bold=False)
-        self.font_tiny = pg.font.SysFont("Arial", 11, bold=True)
+        self.font_title = get_font(18, bold=True)
+        self.font_hud = get_font(16, bold=True)
+        self.font_large = get_font(28, bold=True)
+        self.font_small = get_font(12, bold=False)
+        self.font_tiny = get_font(11, bold=True)
 
         self.message_text = ""
         self.message_color = COLOR_WHITE

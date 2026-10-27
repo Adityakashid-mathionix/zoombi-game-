@@ -200,13 +200,19 @@ class SoundManager:
         self.enabled = True
         self.volume = SOUND_VOLUME
 
-        # Ensure mixer is initialized
+        # Ensure mixer is initialized with multi-profile fallback (critical on Android)
         if not pg.mixer.get_init():
-            try:
-                pg.mixer.init(frequency=44100, size=-16, channels=2, buffer=1024)
-                pg.mixer.set_num_channels(16)
-            except Exception as e:
-                print(f"Pygame mixer initialization error: {e}")
+            initialized = False
+            for freq, buf in [(44100, 1024), (44100, 2048), (22050, 1024), (22050, 2048)]:
+                try:
+                    pg.mixer.init(frequency=freq, size=-16, channels=2, buffer=buf)
+                    pg.mixer.set_num_channels(16)
+                    initialized = True
+                    break
+                except Exception as e:
+                    print(f"Pygame mixer init profile ({freq}, {buf}) failed: {e}")
+            if not initialized:
+                print("Warning: Audio mixer unavailable. Running in silent mode.")
                 self.enabled = False
                 return
 
