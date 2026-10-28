@@ -250,3 +250,24 @@ TACTICAL_CONFIGS = {
         "max_capacity": 3,
     }
 }
+
+
+def safe_font(size, bold=False):
+    """Safely loads font with universal Android fallback to prevent crashes."""
+    import pygame as _pg
+    if not _pg.font.get_init():
+        try:
+            _pg.font.init()
+        except Exception:
+            pass
+    try:
+        f = _pg.font.SysFont("Arial", size, bold=bold)
+        if f is not None:
+            return f
+    except Exception:
+        pass
+    try:
+        return _pg.font.Font(None, size)
+    except Exception:
+        return None
+

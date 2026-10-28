@@ -5,6 +5,11 @@ Firebase Auth/Sync, and Supabase Leaderboards.
 """
 import os
 import sys
+
+# Ensure working directory is always the game root directory (critical for Android APK)
+if __file__:
+    os.chdir(os.path.dirname(os.path.abspath(__file__)))
+
 import pygame as pg
 
 from engine.settings import RES, WIDTH, HEIGHT, HALF_WIDTH, HALF_HEIGHT, FPS

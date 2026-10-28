@@ -7,7 +7,7 @@ import pygame as pg
 from engine.settings import (
     WIDTH, HEIGHT, LEVELS_DATA, WEAPON_CONFIGS, TACTICAL_CONFIGS,
     COLOR_WHITE, COLOR_BLOOD, COLOR_AMBER, COLOR_CYAN, COLOR_GREEN,
-    COLOR_PURPLE, COLOR_DARK_GRAY, COLOR_BLACK
+    COLOR_PURPLE, COLOR_DARK_GRAY, COLOR_BLACK, safe_font
 )
 
 
@@ -18,11 +18,11 @@ class LobbyMenu:
         self.current_tab = "campaign"  # campaign, loadout, profile, leaderboards, settings
 
         # Fonts
-        self.font_hero = pg.font.SysFont("Arial", 36, bold=True)
-        self.font_title = pg.font.SysFont("Arial", 22, bold=True)
-        self.font_body = pg.font.SysFont("Arial", 16, bold=False)
-        self.font_bold = pg.font.SysFont("Arial", 16, bold=True)
-        self.font_small = pg.font.SysFont("Arial", 13, bold=False)
+        self.font_hero = safe_font(36, bold=True)
+        self.font_title = safe_font(22, bold=True)
+        self.font_body = safe_font(16, bold=False)
+        self.font_bold = safe_font(16, bold=True)
+        self.font_small = safe_font(13, bold=False)
 
         # Selected level in selector (1 to 8)
         self.selected_level_id = 1

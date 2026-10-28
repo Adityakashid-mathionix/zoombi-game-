@@ -7,7 +7,7 @@ import pygame as pg
 from engine.settings import (
     WIDTH, HEIGHT, JOYSTICK_RADIUS, JOYSTICK_DEADZONE,
     BUTTON_RADIUS, COLOR_WHITE, COLOR_BLOOD, COLOR_AMBER,
-    COLOR_CYAN, COLOR_GREEN, COLOR_PURPLE
+    COLOR_CYAN, COLOR_GREEN, COLOR_PURPLE, safe_font
 )
 
 
@@ -140,8 +140,8 @@ class TouchControlsManager:
     def __init__(self, game):
         self.game = game
         self.joystick = VirtualJoystick()
-        self.font = pg.font.SysFont("Arial", 14, bold=True)
-        self.large_font = pg.font.SysFont("Arial", 18, bold=True)
+        self.font = safe_font(14, bold=True)
+        self.large_font = safe_font(18, bold=True)
 
         # Look drag tracking
         self.look_finger_id = None
