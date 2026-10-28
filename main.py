@@ -3,6 +3,7 @@ Main Application Entrypoint: Zombie Quarantine FPS Mobile Engine.
 Raycaster architecture with Mobile Touch Controls, 5 Campaign Levels,
 Firebase Auth/Sync, and Supabase Leaderboards.
 """
+import os
 import sys
 import pygame as pg
 
@@ -28,7 +29,14 @@ class Game:
     def __init__(self):
         pg.init()
         pg.display.set_caption("Zombi Apploclips")
-        self.screen = pg.display.set_mode(RES)
+        # Check if running on Android environment
+        self.is_android = (
+            hasattr(sys, "getandroidapilevel")
+            or "ANDROID_ARGUMENT" in os.environ
+            or "P4A_BOOTSTRAP" in os.environ
+        )
+        flags = (pg.SCALED | pg.FULLSCREEN) if self.is_android else 0
+        self.screen = pg.display.set_mode(RES, flags)
         self.clock = pg.time.Clock()
         self.delta_time = 1.0
         self.elapsed_time = 0.0
@@ -87,11 +95,16 @@ class Game:
 
         self.elapsed_time = 0.0
         self.state = "GAMEPLAY"
-        self.mouse_look_enabled = True
-        pg.mouse.set_visible(False)
-        pg.event.set_grab(True)
-        pg.mouse.set_pos([HALF_WIDTH, HALF_HEIGHT])
-        pg.mouse.get_rel()  # flush residual delta
+        if not self.is_android:
+            self.mouse_look_enabled = True
+            pg.mouse.set_visible(False)
+            pg.event.set_grab(True)
+            pg.mouse.set_pos([HALF_WIDTH, HALF_HEIGHT])
+            pg.mouse.get_rel()  # flush residual delta
+        else:
+            self.mouse_look_enabled = False
+            pg.mouse.set_visible(True)
+            pg.event.set_grab(False)
 
     def trigger_level_victory(self):
         """Called upon reaching extraction with survivor rescued."""
@@ -185,8 +198,8 @@ class Game:
                     if event.key in (pg.K_RETURN, pg.K_SPACE, pg.K_r):
                         self.game_over_modal.handle_click(WIDTH // 2 - 120, HEIGHT // 2 + 65)
 
-            # Mouse click in gameplay: re-captures mouse or fires weapon
-            if event.type == pg.MOUSEBUTTONDOWN and self.state == "GAMEPLAY":
+            # Mouse click in gameplay: re-captures mouse or fires weapon (desktop only)
+            if event.type == pg.MOUSEBUTTONDOWN and self.state == "GAMEPLAY" and not self.is_android:
                 if not self.mouse_look_enabled:
                     self.mouse_look_enabled = True
                     pg.mouse.set_visible(False)
@@ -277,13 +290,17 @@ class Game:
         pg.display.flip()
 
     def run(self):
+        target_fps = 60 if self.is_android else FPS
         while True:
-            self.handle_events()
-            self.update()
-            self.draw()
-            raw_dt = self.clock.tick(FPS)
+            try:
+                self.handle_events()
+                self.update()
+                self.draw()
+            except Exception as e:
+                print(f"[!] Engine frame error: {e}")
+            raw_dt = self.clock.tick(target_fps)
             self.delta_time = min(50.0, max(1.0, float(raw_dt)))
-            if self.state == "GAMEPLAY":
+            if self.state == "GAMEPLAY" and not self.is_android:
                 pg.display.set_caption(f"Zombi Apploclips - FPS: {self.clock.get_fps():.1f}")
 
 
