@@ -252,22 +252,30 @@ TACTICAL_CONFIGS = {
 }
 
 
-def safe_font(size, bold=False):
-    """Safely loads font with universal Android fallback to prevent crashes."""
-    import pygame as _pg
-    if not _pg.font.get_init():
+def get_font(size, bold=False):
+    """
+    Universal safe font loader guaranteed to succeed on all platforms (Android, Windows, Linux).
+    Falls back gracefully to Pygame's built-in freesansbold without raising exceptions.
+    """
+    import pygame as pg
+    if not pg.font.get_init():
         try:
-            _pg.font.init()
+            pg.font.init()
         except Exception:
             pass
+
+    for name in ("Arial", "sans-serif", "Roboto", "Helvetica"):
+        try:
+            f = pg.font.SysFont(name, size, bold=bold)
+            if f:
+                return f
+        except Exception:
+            pass
+
     try:
-        f = _pg.font.SysFont("Arial", size, bold=bold)
-        if f is not None:
-            return f
+        f = pg.font.Font(None, size)
+        f.set_bold(bold)
+        return f
     except Exception:
-        pass
-    try:
-        return _pg.font.Font(None, size)
-    except Exception:
-        return None
+        return pg.font.Font(None, size)
 

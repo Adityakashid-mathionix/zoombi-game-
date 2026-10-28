@@ -6,13 +6,19 @@ Firebase Auth/Sync, and Supabase Leaderboards.
 import os
 import sys
 
-# Ensure working directory is always the game root directory (critical for Android APK)
-if __file__:
-    os.chdir(os.path.dirname(os.path.abspath(__file__)))
+# Guarantee that the working directory is always the script directory on Android and desktop
+app_dir = os.path.dirname(os.path.abspath(__file__))
+if app_dir and os.path.exists(app_dir):
+    try:
+        os.chdir(app_dir)
+    except Exception:
+        pass
+if app_dir not in sys.path:
+    sys.path.insert(0, app_dir)
 
 import pygame as pg
 
-from engine.settings import RES, WIDTH, HEIGHT, HALF_WIDTH, HALF_HEIGHT, FPS
+from engine.settings import RES, WIDTH, HEIGHT, HALF_WIDTH, HALF_HEIGHT, FPS, COLOR_BLACK
 from engine.sound_engine import SoundManager
 from engine.asset_manager import AssetManager
 from engine.map_engine import LevelMap
@@ -34,19 +40,46 @@ class Game:
     def __init__(self):
         pg.init()
         pg.display.set_caption("Zombi Apploclips")
-        # Check if running on Android environment
+
+        # Determine runtime platform
         self.is_android = (
             hasattr(sys, "getandroidapilevel")
             or "ANDROID_ARGUMENT" in os.environ
-            or "P4A_BOOTSTRAP" in os.environ
+            or "ANDROID_ENTRYPOINT" in os.environ
+            or "PYTHON_SERVICE_ARGUMENT" in os.environ
         )
-        flags = (pg.SCALED | pg.FULLSCREEN) if self.is_android else 0
-        self.screen = pg.display.set_mode(RES, flags)
+
+        # 1. Physical Window Initialization
+        self.window = None
+        if self.is_android:
+            # On Android, full-screen native window without pg.SCALED renderer conflict
+            for mode_args in [((0, 0), pg.FULLSCREEN), (RES, pg.FULLSCREEN), (RES, 0)]:
+                try:
+                    self.window = pg.display.set_mode(*mode_args)
+                    if self.window:
+                        break
+                except Exception as e:
+                    print(f"Android set_mode {mode_args} warning: {e}")
+        else:
+            # Desktop: Try SCALED, fallback to unscaled
+            try:
+                flags = pg.SCALED if hasattr(pg, "SCALED") else 0
+                self.window = pg.display.set_mode(RES, flags)
+            except Exception:
+                self.window = pg.display.set_mode(RES)
+
+        if not self.window:
+            self.window = pg.display.set_mode(RES)
+
+        # 2. Virtual 1280x720 Canvas: all game subsystems render directly to self.screen
+        self.screen = pg.Surface(RES)
+
         self.clock = pg.time.Clock()
         self.delta_time = 1.0
         self.elapsed_time = 0.0
         self.state = "LOBBY"  # LOBBY, GAMEPLAY, VICTORY, GAME_OVER
         self.mouse_look_enabled = False
+        self.is_suspended = False
 
         # Initialize Backend Services
         self.supabase_service = SupabaseService()
@@ -102,21 +135,30 @@ class Game:
         self.state = "GAMEPLAY"
         if not self.is_android:
             self.mouse_look_enabled = True
-            pg.mouse.set_visible(False)
-            pg.event.set_grab(True)
-            pg.mouse.set_pos([HALF_WIDTH, HALF_HEIGHT])
-            pg.mouse.get_rel()  # flush residual delta
+            try:
+                pg.mouse.set_visible(False)
+                pg.event.set_grab(True)
+                pg.mouse.set_pos([HALF_WIDTH, HALF_HEIGHT])
+                pg.mouse.get_rel()  # flush residual delta
+            except Exception:
+                pass
         else:
             self.mouse_look_enabled = False
-            pg.mouse.set_visible(True)
-            pg.event.set_grab(False)
+            try:
+                pg.mouse.set_visible(True)
+                pg.event.set_grab(False)
+            except Exception:
+                pass
 
     def trigger_level_victory(self):
         """Called upon reaching extraction with survivor rescued."""
         self.state = "VICTORY"
         self.mouse_look_enabled = False
-        pg.mouse.set_visible(True)
-        pg.event.set_grab(False)
+        try:
+            pg.mouse.set_visible(True)
+            pg.event.set_grab(False)
+        except Exception:
+            pass
         self.debriefing_modal.reset()
         lvl_id = self.level_map.level_id
         meta = self.level_map.meta
@@ -137,26 +179,88 @@ class Game:
     def trigger_game_over(self):
         self.state = "GAME_OVER"
         self.mouse_look_enabled = False
-        pg.mouse.set_visible(True)
-        pg.event.set_grab(False)
+        try:
+            pg.mouse.set_visible(True)
+            pg.event.set_grab(False)
+        except Exception:
+            pass
         self.game_over_modal.reset()
 
     def return_to_lobby(self):
         self.state = "LOBBY"
         self.mouse_look_enabled = False
-        pg.mouse.set_visible(True)
-        pg.event.set_grab(False)
+        try:
+            pg.mouse.set_visible(True)
+            pg.event.set_grab(False)
+        except Exception:
+            pass
         pg.display.set_caption("Zombi Apploclips")
+
+    def map_coords(self, pos):
+        """Maps physical window pixel coordinates to virtual 1280x720 canvas."""
+        win_w, win_h = self.window.get_size()
+        if (win_w, win_h) == RES:
+            return pos
+        scale = min(win_w / WIDTH, win_h / HEIGHT)
+        if scale <= 0:
+            return pos
+        scaled_w = int(WIDTH * scale)
+        scaled_h = int(HEIGHT * scale)
+        offset_x = (win_w - scaled_w) // 2
+        offset_y = (win_h - scaled_h) // 2
+        cx = int((pos[0] - offset_x) / scale)
+        cy = int((pos[1] - offset_y) / scale)
+        return (max(0, min(WIDTH - 1, cx)), max(0, min(HEIGHT - 1, cy)))
 
     def handle_events(self):
         for event in pg.event.get():
+            # Coordinate mapping for touches and clicks to virtual 1280x720 canvas
+            if event.type in (pg.MOUSEBUTTONDOWN, pg.MOUSEBUTTONUP, pg.MOUSEMOTION):
+                mapped = self.map_coords(event.pos)
+                event.pos = mapped
+
+            if event.type in (pg.FINGERDOWN, pg.FINGERMOTION, pg.FINGERUP):
+                win_w, win_h = self.window.get_size()
+                raw_px = int(event.x * win_w)
+                raw_py = int(event.y * win_h)
+                cx, cy = self.map_coords((raw_px, raw_py))
+                event.x = cx / float(WIDTH)
+                event.y = cy / float(HEIGHT)
             if event.type == pg.QUIT:
                 pg.quit()
                 sys.exit()
 
-            # Global ESC key logic
+            # Android lifecycle suspend / resume handling
+            if event.type in (
+                getattr(pg, "APP_WILLENTERBACKGROUND", -101),
+                getattr(pg, "APP_DIDENTERBACKGROUND", -102),
+                getattr(pg, "WINDOWMINIMIZED", -103)
+            ):
+                self.is_suspended = True
+                try:
+                    pg.mixer.pause()
+                    pg.mixer.music.pause()
+                except Exception:
+                    pass
+                continue
+
+            if event.type in (
+                getattr(pg, "APP_WILLENTERFOREGROUND", -104),
+                getattr(pg, "APP_DIDENTERFOREGROUND", -105),
+                getattr(pg, "WINDOWRESTORED", -106)
+            ):
+                self.is_suspended = False
+                try:
+                    pg.mixer.unpause()
+                    pg.mixer.music.unpause()
+                except Exception:
+                    pass
+                self.clock.tick(FPS)
+                continue
+
+            # Global ESC & Android Back button logic
             if event.type == pg.KEYDOWN:
-                if event.key == pg.K_ESCAPE:
+                if event.key in (pg.K_ESCAPE, getattr(pg, "K_AC_BACK", -107)):
                     if self.state == "GAMEPLAY":
                         self.return_to_lobby()
                     elif self.state in ("VICTORY", "GAME_OVER"):
@@ -203,8 +307,8 @@ class Game:
                     if event.key in (pg.K_RETURN, pg.K_SPACE, pg.K_r):
                         self.game_over_modal.handle_click(WIDTH // 2 - 120, HEIGHT // 2 + 65)
 
-            # Mouse click in gameplay: re-captures mouse or fires weapon (desktop only)
-            if event.type == pg.MOUSEBUTTONDOWN and self.state == "GAMEPLAY" and not self.is_android:
+            # Mouse click in gameplay: re-captures mouse or fires weapon
+            if event.type == pg.MOUSEBUTTONDOWN and self.state == "GAMEPLAY":
                 if not self.mouse_look_enabled:
                     self.mouse_look_enabled = True
                     pg.mouse.set_visible(False)
@@ -229,6 +333,9 @@ class Game:
                     self.game_over_modal.handle_click(mx, my)
 
     def update(self):
+        if self.is_suspended:
+            return
+
         dt = self.delta_time
 
         if self.state == "GAMEPLAY":
@@ -292,24 +399,78 @@ class Game:
             elif self.state == "GAME_OVER":
                 self.game_over_modal.draw(self.screen)
 
+        # Composite 1280x720 canvas to physical window with letterboxing
+        win_w, win_h = self.window.get_size()
+        if (win_w, win_h) == RES:
+            self.window.blit(self.screen, (0, 0))
+        else:
+            scale = min(win_w / WIDTH, win_h / HEIGHT)
+            scaled_w = int(WIDTH * scale)
+            scaled_h = int(HEIGHT * scale)
+            offset_x = (win_w - scaled_w) // 2
+            offset_y = (win_h - scaled_h) // 2
+            scaled_surf = pg.transform.smoothscale(self.screen, (scaled_w, scaled_h))
+            self.window.fill(COLOR_BLACK)
+            self.window.blit(scaled_surf, (offset_x, offset_y))
+
         pg.display.flip()
 
     def run(self):
-        target_fps = 60 if self.is_android else FPS
         while True:
-            try:
-                self.handle_events()
-                self.update()
-                self.draw()
-            except Exception as e:
-                print(f"[!] Engine frame error: {e}")
-            raw_dt = self.clock.tick(target_fps)
+            self.handle_events()
+            self.update()
+            self.draw()
+            raw_dt = self.clock.tick(FPS)
             self.delta_time = min(50.0, max(1.0, float(raw_dt)))
-            if self.state == "GAMEPLAY" and not self.is_android:
+            if self.state == "GAMEPLAY":
                 pg.display.set_caption(f"Zombi Apploclips - FPS: {self.clock.get_fps():.1f}")
 
 
-if __name__ == "__main__":
+def show_crash_screen(err_text):
+    """
+    Failsafe diagnostic screen to display runtime error traceback directly on the device.
+    Ensures the user never sees an uninformative silent crash back to the home screen.
+    """
+    try:
+        import pygame as pg
+        if not pg.get_init():
+            pg.init()
+        screen = pg.display.set_mode((0, 0), pg.FULLSCREEN)
+        font = pg.font.Font(None, 24)
+        clock = pg.time.Clock()
+
+        # Save to local crash log
+        try:
+            with open("crash_log.txt", "w") as f:
+                f.write(err_text)
+        except Exception:
+            pass
+
+        lines = err_text.splitlines()
+        running = True
+        while running:
+            for event in pg.event.get():
+                if event.type in (pg.QUIT, pg.KEYDOWN, pg.FINGERDOWN, pg.MOUSEBUTTONDOWN):
+                    running = False
+            screen.fill((25, 10, 15))
+            header = font.render("ZOMBI APPLOCLIPS - RUNTIME DIAGNOSTIC", True, (255, 90, 90))
+            screen.blit(header, (20, 20))
+            sub = font.render("Tap screen or press back to exit", True, (180, 180, 180))
+            screen.blit(sub, (20, 48))
+            y = 80
+            for line in lines[-22:]:
+                txt = font.render(line[:85], True, (240, 220, 220))
+                screen.blit(txt, (20, y))
+                y += 24
+            pg.display.flip()
+            clock.tick(15)
+    except Exception as ex:
+        print(f"Error screen failure: {ex}")
+    finally:
+        sys.exit(1)
+
+
+def main():
     game = Game()
     if len(sys.argv) > 1:
         arg = sys.argv[1].lower()
@@ -330,3 +491,15 @@ if __name__ == "__main__":
         elif arg in ("8", "level8"):
             game.start_mission(8)
     game.run()
+
+
+if __name__ == "__main__":
+    try:
+        main()
+    except Exception as e:
+        import traceback
+        err_msg = traceback.format_exc()
+        print("=== FATAL STARTUP EXCEPTION ===")
+        print(err_msg)
+        show_crash_screen(err_msg)
+

@@ -7,7 +7,7 @@ import random
 import pygame as pg
 from engine.settings import (
     WIDTH, HEIGHT, HALF_WIDTH, HALF_HEIGHT, COLOR_WHITE, COLOR_GREEN,
-    COLOR_BLOOD, COLOR_AMBER, COLOR_CYAN, COLOR_BLACK, safe_font
+    COLOR_BLOOD, COLOR_AMBER, COLOR_CYAN, COLOR_BLACK, get_font
 )
 
 
@@ -15,11 +15,11 @@ class DebriefingModal:
     """Victory screen shown upon extracting with the rescued survivor."""
     def __init__(self, game):
         self.game = game
-        self.font_hero = safe_font(34, bold=True)
-        self.font_title = safe_font(22, bold=True)
-        self.font_body = safe_font(16, bold=False)
-        self.font_bold = safe_font(16, bold=True)
-        self.font_small = safe_font(14, bold=True)
+        self.font_hero = get_font(34, bold=True)
+        self.font_title = get_font(22, bold=True)
+        self.font_body = get_font(16, bold=False)
+        self.font_bold = get_font(16, bold=True)
+        self.font_small = get_font(14, bold=True)
 
         self.anim_time = 0.0
         self.particles = []
@@ -214,9 +214,9 @@ class GameOverModal:
     """Game over screen shown when player is defeated by the swarm."""
     def __init__(self, game):
         self.game = game
-        self.font_hero = safe_font(38, bold=True)
-        self.font_title = safe_font(22, bold=True)
-        self.font_bold = safe_font(16, bold=True)
+        self.font_hero = get_font(38, bold=True)
+        self.font_title = get_font(22, bold=True)
+        self.font_bold = get_font(16, bold=True)
         self.anim_time = 0.0
 
     def reset(self):

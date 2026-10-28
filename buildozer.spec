@@ -13,20 +13,20 @@ package.domain = org.zombiapploclips
 source.dir = .
 
 # (list) Source files to include (let empty to include all the files)
-source.include_exts = py,png,jpg,jpeg,wav,mp3,json,txt,spec
+source.include_exts = py,png,jpg,jpeg,wav,mp3,ogg,m4a,webp,json,txt,spec,ttf,otf
 
 # (list) List of directory to include
 source.include_dirs = assets,backend,engine,ui
 
 # (list) List of exclusions using pattern matching
-source.exclude_patterns = reference_doom/*,.git/*,__pycache__/*
+source.exclude_patterns = reference_doom/*,.git/*,__pycache__/*,*.zip,*.tar.gz,scratch/*
 
 # (str) Application versioning
 version = 1.0.0
 
 # (list) Application requirements
 # comma separated e.g. requirements = sqlite3,kivy
-requirements = python3,hostpython3,sdl2,pygame-ce
+requirements = python3,hostpython3,sdl2,cython,pygame-ce
 
 # (str) Presplash of the application
 # presplash.filename = %(source.dir)s/assets/ui/presplash.png
@@ -74,8 +74,14 @@ android.archs = arm64-v8a
 # (bool) enables Android auto backup feature (Android API >=23)
 android.allow_backup = True
 
+# (str) python-for-android git clone url
+p4a.url = https://github.com/AnGlonchas/python-for-android.git
+
 # (str) python-for-android branch to use, defaults to master
 p4a.branch = develop
+
+# (str) The directory in which python-for-android should look for your own build recipes
+p4a.local_recipes = ./recipes
 
 # (str) Bootstrap to use for android
 p4a.bootstrap = sdl2
